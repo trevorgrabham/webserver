@@ -1,0 +1,86 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timer</title>
+    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+    <script
+      src="https://unpkg.com/htmx.org@1.9.12"
+      integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div id="timer-container">
+      <div
+        id="timer"
+        _="on startTimer call startTimer() then 
+          repeat until event stopTimer
+            call updateTimer()
+            log 'Called'
+            wait 1s
+          end"
+      >
+        0:00:00
+      </div>
+      <form>
+        <input id="hidden-timer" name="timer" type="hidden" value="0:00:00" />
+        <button
+          _="on click send startTimer to #timer"
+          hx-get="/startTimer"
+          hx-swap="outerHTML"
+        >
+          Start
+        </button>
+      </form>
+    </div>
+    <script>
+      var timer;
+      var timerInput;
+      var startTime;
+      var hours = 0;
+      var minutes = 0;
+      var seconds = 0;
+      function startTimer() {
+        timer = document.getElementById("timer");
+        timerInput = document.getElementById("hidden-timer");
+        startTime =
+          Date.now() -
+          seconds * 1000 -
+          minutes * 1000 * 60 -
+          hours * 1000 * 60 * 60;
+      }
+      function resetTimer() {
+        seconds = 0;
+        minutes = 0;
+        hours = 0;
+      }
+      function formatTime() {
+        var elapsedTime = Date.now() - startTime;
+        seconds = Math.floor(elapsedTime / 1000) % 60;
+        minutes = Math.floor(elapsedTime / 1000 / 60) % 60;
+        hours = Math.floor(elapsedTime / 1000 / 60 / 60) % 24;
+        var secondsString, minutesString;
+        if (seconds < 10) {
+          secondsString = "0" + seconds;
+        } else {
+          secondsString = seconds.toString();
+        }
+        if (minutes < 10) {
+          minutesString = "0" + minutes;
+        } else {
+          minutesString = minutes.toString();
+        }
+        if (hours < 1) {
+          return minutesString + ":" + secondsString;
+        }
+        return hours + ":" + minutesString + ":" + secondsString;
+      }
+      function updateTimer() {
+        console.log("called");
+        timer.innerHTML = formatTime();
+        timerInput.setAttribute("value", timer.innerHTML);
+      }
+    </script>
+  </body>
+</html>
