@@ -12,10 +12,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
-var db *sql.DB
-
 type activity struct {
-	id					int64
 	day					string
 	duration 		int64
 	description	string
@@ -90,7 +87,7 @@ func main() {
 		fields := strings.Split(line, ",")
 
 		// trim the white space from the description and tags
-		for i, _ := range fields[2:] {
+		for i := range fields[2:] {
 			fields[i+2] = strings.ToLower(strings.TrimSpace(fields[i+2]))
 		}
 		// add the activities to the timer_data db
