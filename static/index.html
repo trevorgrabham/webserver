@@ -52,7 +52,6 @@
         return hours + ":" + minutesString + ":" + secondsString;
       }
       function updateTimer() {
-        console.log("called");
         timer.innerHTML = formatTime();
         timerInput.setAttribute("value", timer.innerHTML);
       }
@@ -65,22 +64,32 @@
         _="on startTimer call startTimer() then 
           repeat until event stopTimer
             call updateTimer()
-            log 'Called'
             wait 1s
           end"
       >
         0:00:00
       </div>
-      <form>
+      <form
+        id="timer-form"
+        hx-post="/submitActivity"
+        hx-target="#timer-container"
+        action=""
+      >
         <input id="hidden-timer" name="timer" type="hidden" value="0:00:00" />
         <button
           _="on click send startTimer to #timer"
           hx-get="/startTimer"
+          hx-target="this"
           hx-swap="outerHTML"
         >
           Start
         </button>
       </form>
     </div>
+    <!-- <div
+      id="dashboard-section"
+      hx-get="/dashboard?maxItems=50"
+      hx-trigger="load"
+    ></div> -->
   </body>
 </html>
