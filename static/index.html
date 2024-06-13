@@ -9,32 +9,7 @@
       integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2"
       crossorigin="anonymous"
     ></script>
-  </head>
-  <body>
-    <div id="timer-container">
-      <div
-        id="timer"
-        _="on startTimer call startTimer() then 
-          repeat until event stopTimer
-            call updateTimer()
-            log 'Called'
-            wait 1s
-          end"
-      >
-        0:00:00
-      </div>
-      <form>
-        <input id="hidden-timer" name="timer" type="hidden" value="0:00:00" />
-        <button
-          _="on click send startTimer to #timer"
-          hx-get="/startTimer"
-          hx-swap="outerHTML"
-        >
-          Start
-        </button>
-      </form>
-    </div>
-    <script>
+    <script defer>
       var timer;
       var timerInput;
       var startTime;
@@ -82,5 +57,30 @@
         timerInput.setAttribute("value", timer.innerHTML);
       }
     </script>
+  </head>
+  <body>
+    <div id="timer-container">
+      <div
+        id="timer"
+        _="on startTimer call startTimer() then 
+          repeat until event stopTimer
+            call updateTimer()
+            log 'Called'
+            wait 1s
+          end"
+      >
+        0:00:00
+      </div>
+      <form>
+        <input id="hidden-timer" name="timer" type="hidden" value="0:00:00" />
+        <button
+          _="on click send startTimer to #timer"
+          hx-get="/startTimer"
+          hx-swap="outerHTML"
+        >
+          Start
+        </button>
+      </form>
+    </div>
   </body>
 </html>

@@ -9,28 +9,89 @@ import (
 func handleStartTimer(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, `
 	<div id="timer-buttons-container">
-		<button id="pause-timer" _="on click send stopTimer to #timer" hx-get="/pauseTimer" hx-swap="outerHTML">Pause</button>
-		<button id="stop-timer" _="on click send stopTimer to #timer" hx-get="/stopTimer" hx-target="#timer-buttons-container">Stop</button>
+
+		<button id="pause-timer" 
+			_="on click send stopTimer to #timer" 
+			hx-get="/pauseTimer" 
+			hx-swap="outerHTML"
+		>
+			Pause
+		</button>
+
+		<button id="stop-timer" 
+			_="on click send stopTimer to #timer" 
+			hx-get="/stopTimer" 
+			hx-target="#timer-buttons-container"
+		>
+			Stop
+		</button>
+
 	</div>
 	`)
 }
 
 func handlePauseTimer(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, `
-	<button id="resume-timer" _="on click send startTimer to #timer" hx-get="/resumeTimer" hx-swap="outerHTML">Resume</button>
+	<button id="resume-timer" 
+		_="on click send startTimer to #timer" 
+		hx-get="/resumeTimer" 
+		hx-swap="outerHTML"
+	>
+		Resume
+	</button>
 	`)
 }
 
 func handleResumeTimer(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, `
-	<button id="pause-timer" _="on click send stopTimer to #timer" hx-get="/pauseTimer" hx-swap="outerHTML">Pause</button>
+	<button id="pause-timer" 
+		_="on click send stopTimer to #timer" 
+		hx-get="/pauseTimer" 
+		hx-swap="outerHTML"
+	>
+		Pause
+	</button>
 	`)
 }
 
 func handleStopTimer(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, `
-	<input type="text" name="activity" placeholder="What were you doing?" />
-	<button hx-post="/submitActivity" hx-target="#timer-container" _="on click call resetTimer()">Submit</button>
+	<div class="form-input-row">
+
+		<input type="text" 
+			name="activity" 
+			placeholder="What were you doing?" 
+		/>
+
+	</div>
+
+	<div id="tag-container" class="form-input-row">
+
+		<p id="add-tag-button" 
+			hx-get="/tagInput" 
+			hx-target="#tag-container" 
+			hx-swap="beforebegin"
+		>
+			Add tag
+		</p>
+
+	</div>
+
+	<button 
+		hx-post="/submitActivity" 
+		hx-target="#timer-container" 
+		_="on click call resetTimer()"
+	>
+		Submit
+	</button>
+	`)
+}
+
+func handleTagInput(w http.ResponseWriter, _ *http.Request) {
+	fmt.Fprintf(w, `
+	<input type="text"
+		name="tag"
+	/>
 	`)
 }
 
@@ -39,8 +100,7 @@ func handleActivitySubmit(w http.ResponseWriter, req *http.Request) {
 		log.Fatalf("handleActivitySubmit parsing form: %v", err)
 	}
 
-	log.Println(req.Form["activity"])
-	log.Println(req.Form["timer"])
+	log.Println(req.Form["tag"])
 
 	fmt.Fprint(w, `
     <div
@@ -53,8 +113,15 @@ func handleActivitySubmit(w http.ResponseWriter, req *http.Request) {
     >
       0:00:00
     </div>
+
     <form>
-      <input id="hidden-timer" name="timer" type="hidden" value="0:00:00" />
+
+      <input id="hidden-timer" 
+				name="timer" 
+				type="hidden" 
+				value="0:00:00" 
+			/>
+
       <button
         _="on click send startTimer to #timer"
         hx-get="/startTimer"
@@ -73,5 +140,6 @@ func StartServer() {
 	http.HandleFunc("/resumeTimer", handleResumeTimer)
 	http.HandleFunc("/stopTimer", handleStopTimer)
 	http.HandleFunc("/submitActivity", handleActivitySubmit)
+	http.HandleFunc("/tagInput", handleTagInput)
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }
