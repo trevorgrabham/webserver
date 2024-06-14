@@ -56,6 +56,7 @@
         timerInput.setAttribute("value", timer.innerHTML);
       }
     </script>
+    <link rel="stylesheet" href="./index.css" />
   </head>
   <body>
     <div id="timer-container">
@@ -67,7 +68,7 @@
             wait 1s
           end"
       >
-        0:00:00
+        00:00
       </div>
       <form
         id="timer-form"
@@ -86,10 +87,10 @@
         </button>
       </form>
     </div>
-    <!-- <div
+    <div
       id="dashboard-section"
       hx-get="/dashboard?maxItems=50"
       hx-trigger="load"
-    ></div> -->
+    ></div>
   </body>
 </html>
