@@ -16,6 +16,13 @@
       var hours = 0;
       var minutes = 0;
       var seconds = 0;
+      var startDate = "";
+      document.addEventListener("htmx:before-request", function (event) {
+        console.log(`Event from ${event.detail.elt.id}`);
+        if (event.detail.elt.id === "timer-form") {
+          prepareDashboard();
+        }
+      });
       function startTimer() {
         timer = document.getElementById("timer");
         timerInput = document.getElementById("hidden-timer");
@@ -54,6 +61,42 @@
       function updateTimer() {
         timer.innerHTML = formatTime();
         timerInput.setAttribute("value", timer.innerHTML);
+      }
+      function checkDateExists() {
+        let timeString = document.getElementById("timer").innerHTML;
+        let timeSegments = timeString.split(":");
+        let timeDiff = 0;
+        if (timeSegments.length == 3) {
+          timeDiff += 1000 * parseInt(timeSegments[2]);
+          timeDiff += 60 * 1000 * parseInt(timeSegments[1]);
+          timeDiff += 60 * 60 * 1000 * parseInt(timeSegments[0]);
+        } else {
+          timeDiff += 1000 * parseInt(timeSegments[1]);
+          timeDiff += 60 * 1000 * parseInt(timeSegments[0]);
+        }
+        startDate = new Date(new Date() - timeDiff).toLocaleDateString(
+          "en-CA",
+          { year: "numeric", month: "2-digit", day: "2-digit" }
+        );
+        console.log(
+          document.getElementById(`date-${startDate}`) != null
+            ? `Element already exists for ${startDate} day`
+            : "No element exists yet"
+        );
+        return document.getElementById(`date-${startDate}`) != null;
+      }
+      function prepareDashboard() {
+        if (!checkDateExists()) {
+          let parent = document.getElementById("dashboard-section");
+          let child = document.createElement("div");
+          child.id = `date-${startDate}`;
+          startDate = "";
+          if (parent.firstChild) {
+            parent.insertBefore(child, parent.firstChild);
+          } else {
+            parent.appendChild(child);
+          }
+        }
       }
     </script>
     <link rel="stylesheet" href="./index.css" />

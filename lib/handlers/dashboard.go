@@ -11,11 +11,11 @@ import (
 )
 
 const cardTemplate = `{{range .}}
-<div class="card-container">
+<div id="date-{{.Day}}" class="card-container">
 	<h2 class="card-date">{{.Day}}</h2>
 	<div class="activities-container">
 		{{range .Activities}}
-		<span class="duration-baD" data-dur="{{.Duration}}" data-desc="{{.Description}}"></span>
+		<span class="duration-bar" data-dur="{{.Duration}}" data-desc="{{.Description}}"></span>
 		{{end}}
 	</div>
 	<div class="tags-container">
@@ -26,14 +26,16 @@ const cardTemplate = `{{range .}}
 </div>
 {{end}}`
 
-type activityData struct {
+var CardTemplate = template.Must(template.New("cardtemplate").Parse(cardTemplate))
+
+type ActivityData struct {
 	Duration		int64
 	Description	string
 }
 
-type cardData struct {
+type CardData struct {
 	Day						string
-	Activities		[]activityData	
+	Activities		[]ActivityData	
 	Tags					Tags					
 }
 
@@ -85,11 +87,11 @@ func HandleDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 	defer dayRows.Close()
 
-	cards := make([]cardData, 0, maxItems)
+	cards := make([]CardData, 0, maxItems)
 
 	// for each day, get all sessions
 	for dayRows.Next() {
-		card := cardData{}
+		card := CardData{}
 		var day string
 		if err := dayRows.Scan(&day); err != nil {
 			log.Fatalf("Reading from dayRow: %v", err)
@@ -113,7 +115,7 @@ func HandleDashboard(w http.ResponseWriter, r *http.Request) {
 
 			// update card data
 			card.Day = day
-			card.Activities = append(card.Activities, activityData{
+			card.Activities = append(card.Activities, ActivityData{
 				Duration: dur,
 				Description: desc,
 			})
@@ -152,8 +154,7 @@ func HandleDashboard(w http.ResponseWriter, r *http.Request) {
 			log.Fatalf("Query distinct day from timer_data: %v", err)
 	}
 
-	cardHTML := template.Must(template.New("cardtemplate").Parse(cardTemplate))
-	if err := cardHTML.Execute(w, cards); err != nil {
+	if err := CardTemplate.Execute(w, cards); err != nil {
 		log.Fatalf("Executing template: %v", err)
 	}
 }	

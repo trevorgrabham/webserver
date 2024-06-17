@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"strconv"
@@ -183,6 +184,17 @@ func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Timer started %v min ago\nIt was %v\n", timerDuration, start.Format("2006-01-02"))
 
+	// grab the tags 
+	var tags []string
+	data, ok := r.Form["tag"]
+	if ok {
+		for _, tag := range data {
+			tag = strings.TrimSpace(tag)
+			if len(tag) > 0 {
+				tags = append(tags, tag)
+			}
+		}
+	}
 
 	timer := timerData{
 		day:					start.Format("2006-01-02"),
@@ -190,11 +202,44 @@ func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
 		description:	desc,
 	}
 
-	// insert into timer_data db
+	// generate the dashboard card data
+	
+	// before insert, check to see if there was already a session today
 	db, err := database.ConnectDb()
 	if err != nil {
 		log.Fatal(err)
 	}
+	dataRows, err := db.Query("SELECT timer_data.id AS id, duration, description, tag FROM timer_data JOIN activity_tag ON timer_data.id = activity_tag.activity_id WHERE day LIKE ?", timer.day)
+	if err != nil {
+		log.Fatalf("checking if entry for today already exists in timer_data: %v", err)
+	}
+
+	// add all pre-existing data for this date
+	var (
+		prevId, currId, duration int64
+		description, t string
+	)
+	card := CardData{Day: timer.day}
+	for dataRows.Next() {
+		err := dataRows.Scan(&currId, &duration, &description, &t)
+		if err != nil {
+			log.Fatalf("reading from a row for the card data: %v", err)
+		}
+		card.Tags = append(card.Tags, t)
+		if prevId != currId {
+			card.Activities = append(card.Activities, ActivityData{Duration: duration, Description: description})
+		}
+		prevId = currId
+	}
+	if dataRows.Err() != nil {
+		log.Fatalf("error querying if today exists: %v", err)
+	}
+
+	// add the new data for today
+	card.Tags = append(card.Tags, tags...)
+	card.Activities = append(card.Activities, ActivityData{Duration: timer.duration, Description: timer.description})
+
+	// insert into timer_data db
 	result, err := db.Exec("INSERT INTO timer_data (day, duration, description) VALUES (?, ?, ?)", timer.day, timer.duration, timer.description)
 	if err != nil {
 		log.Fatalf("Inserting into timer_data (%s, %d, %s): %v", timer.day, timer.duration, timer.description, err)
@@ -204,53 +249,68 @@ func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("Retrieving inserted id: %v", err)
 	}
 
-	// parse tags and insert into activity_tag db
-	if tags, ok := r.Form["tag"]; ok && len(tags) > 0 {
-		for _, tag := range tags {
+	// insert into activity_tag db
+	for _, tag := range tags {
 
-			fmt.Printf("Adding tag: %v\n", tag)
+		fmt.Printf("Adding tag: %v\n", tag)
 
-			tag = strings.TrimSpace(tag)
-			if len(tag) > 0 {
-				result, err := db.Exec("INSERT INTO activity_tag (tag, activity_id) VALUES (?, ?)", tag, id)
-				if err != nil {
-					log.Fatalf("Inserting into activity_tag (%s, %d): %v", tag, id, err)
-				}
-				_, err = result.LastInsertId()
-				if err != nil {
-					log.Fatalf("Retrieving inserted id: %v", err)
-				}
+		if len(tag) > 0 {
+			result, err := db.Exec("INSERT INTO activity_tag (tag, activity_id) VALUES (?, ?)", tag, id)
+			if err != nil {
+				log.Fatalf("Inserting into activity_tag (%s, %d): %v", tag, id, err)
+			}
+			_, err = result.LastInsertId()
+			if err != nil {
+				log.Fatalf("Retrieving inserted id: %v", err)
 			}
 		}
 	}
 
+	templateString := `<div id="date-{{.Day}}" class="card-container" hx-swap-oob="true">
+		<h2 class="card-date">{{.Day}}</h2>
+		<div class="activities-container">
+			{{range .Activities}}
+			<span class="duration-bar" data-dur="{{.Duration}}" data-desc="{{.Description}}"></span>
+			{{end}}
+		</div>
+		<div class="tags-container">
+			{{range .Tags}}
+			<span class="tag">{{.}}</span>
+			{{end}}
+		</div>
+	</div>`
+
+	cardTemplate := template.Must(template.New("cardtemplate").Parse(templateString))
+	if err := cardTemplate.Execute(w, card); err != nil {
+		log.Fatalf("executing template: %v", err)
+	}
+
 	fmt.Fprint(w, `
-    <div
-      id="timer"
-      _="on startTimer call startTimer() then 
-          repeat until event stopTimer
-            call updateTimer()
-            wait 1s
-          end"
+	<div
+    id="timer"
+    _="on startTimer call startTimer() then 
+      repeat until event stopTimer
+        call updateTimer()
+        wait 1s
+      end"
+  >
+    00:00
+  </div>
+  <form
+    id="timer-form"
+    hx-post="/submitActivity"
+    hx-target="#timer-container"
+    action=""
+  >
+    <input id="hidden-timer" name="timer" type="hidden" value="0:00:00" />
+    <button
+      _="on click send startTimer to #timer"
+      hx-get="/startTimer"
+      hx-target="this"
+      hx-swap="outerHTML"
     >
-      0:00:00
-    </div>
-
-    <form>
-
-      <input id="hidden-timer" 
-				name="timer" 
-				type="hidden" 
-				value="0:00:00" 
-			/>
-
-      <button
-        _="on click send startTimer to #timer"
-        hx-get="/startTimer"
-        hx-swap="outerHTML"
-      >
-        Start
-      </button>
-    </form>
-	`)
+      Start
+    </button>
+  </form>`)
+	
 }
