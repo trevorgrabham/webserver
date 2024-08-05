@@ -57,13 +57,12 @@ func HandleDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	res, ok := r.Form["maxItems"]
-	var maxItems int64
-	if ok {
-		var err error
-		maxItems, err = strconv.ParseInt(res[0], 10, 64)
-		if err != nil {
-			log.Fatalf("Parsing maxItems (%s): %v", res[0], err)
-		}
+	if !ok {
+		log.Fatal("'maxItems' was not a provided parameter")
+	}
+	maxItems, err := strconv.ParseInt(res[0], 10, 64)
+	if err != nil {
+		log.Fatalf("Parsing maxItems (%s): %v", res[0], err)
 	}
 
 	// connect to the db

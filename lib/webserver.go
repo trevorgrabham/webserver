@@ -14,9 +14,11 @@ func StartServer() {
 	http.HandleFunc("/pauseTimer", handlers.HandlePauseTimer)
 	http.HandleFunc("/resumeTimer", handlers.HandleResumeTimer)
 	http.HandleFunc("/stopTimer", handlers.HandleStopTimer)
+	// http.HandleFunc("/tagInput", handlers.HandleTagInput)
+	http.HandleFunc("/addTag", handlers.HandleAddTag)
+	http.HandleFunc("/removeTag", handlers.HandleRemove)
+	http.HandleFunc("/resetTimer", handlers.HandleResetTimer)
 	http.HandleFunc("/submitActivity", handlers.HandleActivitySubmit)
-	http.HandleFunc("/tagInput", handlers.HandleTagInput)
 	http.HandleFunc("/dashboard", handlers.HandleDashboard)
-	http.HandleFunc("/remove", handlers.HandleRemove)
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }

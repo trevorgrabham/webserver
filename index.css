@@ -1,0 +1,181 @@
+/* for mobile */
+@media screen and (width < 500px) {
+  :root {
+    font-size: 16px;
+    --background-color: #222222;
+    --timer-color: #0fff50aa;
+    background-color: var(--background-color);
+    background-image: repeating-linear-gradient(
+      #0000,
+      #0000 5px,
+      #0000000a 5px,
+      #0000000a 10px
+    );
+  }
+
+  body {
+    margin: 0;
+  }
+
+  #timer-container {
+    height: 90vh;
+    margin: 0 auto;
+
+    /* for when we get a nav bar set up */
+
+    position: relative;
+    top: 10vh;
+    margin-bottom: 10vh;
+    display: grid;
+    grid-template-areas:
+      "timer"
+      "timer-form"
+      "timer-form"
+      ".";
+    grid-template-columns: minmax(auto, 80vw);
+    grid-template-rows: minmax(auto, 1fr) 1fr 1fr 1fr;
+  }
+
+  #timer {
+    grid-area: timer;
+  }
+
+  #timer > p {
+    margin: 0;
+    padding: 0 0.25lh;
+    font-size: 5em;
+    font-family: monospace;
+    border: 5px solid var(--timer-color);
+    color: var(--timer-color);
+    border-radius: 0.15lh;
+    letter-spacing: -0.25rem;
+  }
+
+  #timer-form {
+    width: 100%;
+    margin: 0 auto;
+    grid-area: timer-form;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(8, 1fr);
+    align-items: center;
+  }
+
+  .timer-form-input-row {
+  }
+
+  #timer-buttons-container {
+    grid-row: 1 / -1;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+  }
+
+  .timer-button {
+    padding: 0;
+    border-radius: 50%;
+    fill: white;
+  }
+
+  .timer-button:hover {
+    fill: var(--timer-color);
+    cursor: pointer;
+  }
+
+  .button-main {
+    width: 20vw;
+    height: 20vw;
+  }
+
+  .button-sub-form {
+    width: 2lh;
+    height: 2lh;
+  }
+
+  .button-form {
+    width: 15vw;
+    height: 15vw;
+  }
+
+  .svg-wrapper {
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: #0000;
+  }
+
+  #activity-input-container {
+    grid-row: 1 / 4;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+  }
+
+  #activity-input-container > input {
+    height: 2lh;
+  }
+
+  #tags-container {
+    max-height: 5lh;
+    overflow-y: auto;
+  }
+
+  input:read-only {
+    padding: 0;
+    border: none;
+    font-family: monospace;
+  }
+
+  .button-tag-remove {
+    height: 1lh;
+    width: 1lh;
+  }
+
+  #tags-input-container {
+    grid-row: 4 / 6;
+    margin-block-end: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5vw;
+  }
+
+  #tag-input-container {
+    display: flex;
+    gap: 2vw;
+    margin-block-end: 0;
+  }
+
+  #tag-input {
+    height: 2lh;
+    flex: 1;
+  }
+
+  #timer-form-submit-container {
+    grid-row: 6 / 8;
+    display: flex;
+    justify-content: center;
+    gap: 5vw;
+  }
+
+  .tag-container {
+    box-sizing: border-box;
+    display: inline-flex;
+    padding: 0.25lh;
+  }
+
+  .timer-form-input {
+    background-color: var(--background-color);
+    border: 1px solid white;
+    border-radius: 4vw;
+    padding: 0 4vw;
+    line-height: 1lh;
+    font-size: 1.1em;
+  }
+
+  .timer-form-input:-interal-autofill-selected {
+    background-color: var(--background-color);
+    color: white !important;
+  }
+}
