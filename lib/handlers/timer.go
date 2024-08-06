@@ -173,6 +173,7 @@ func HandleStopTimer(w http.ResponseWriter, _ *http.Request) {
 		<div id="activity-input-container" class="timer-form-input-row">
 
 			<input type="text" 
+				id="activity-input"
 				class="timer-form-input"
 				name="activity" 
 				placeholder="What were you doing?" 
@@ -181,34 +182,37 @@ func HandleStopTimer(w http.ResponseWriter, _ *http.Request) {
 				maxlength="255"
 			/>
 	
-			<div id="tags-container"></div>
+			<div id="tags-wrapper">
+				<div id="tags-container"></div>
+			</div>
 
 		</div>
 
 
-		<form 
+		<div 
 			id="tag-input-container" 
 			class="timer-form-input-row"
-			hx-post="/addTag"
-			hx-target="#tags-container"
-			hx-swap="beforeend"
-			_="on submit call my reset()"
 		>
 
 			<input type="text"
 				id="tag-input" 
 				class="timer-form-input"
-				name="tag" 
+				name="temporary-tag" 
 				placeholder="tags" 
 				maxlength="255"
 			/>
 
 			<button 
-				type="submit"
+			 	id="add-tag-button"
 				class="svg-wrapper"
+				hx-post="/addTag"
+				hx-include="#tag-input"
+				hx-params="temporary-tag"
+				hx-target="#tags-container"
+				hx-swap="beforeend"
 			>
 				<svg 
-					id="add-tag-button"
+					id="add-tag-svg"
 					class="timer-button button-sub-form"
 					fill="#000000" 
 					height="71px" 
@@ -231,7 +235,7 @@ func HandleStopTimer(w http.ResponseWriter, _ *http.Request) {
 				</svg>
 			</button>
 
-		</form>
+		</div>
 
 		<div id="timer-form-submit-container" class="timer-form-input-row">
 			<button 
@@ -269,6 +273,7 @@ func HandleStopTimer(w http.ResponseWriter, _ *http.Request) {
 				hx-target="#timer-container"
 			>
 				<svg 
+					id="reset-button"
 			 		class="timer-button button-form"
 					fill="#000000" 
 					height="71px" 
@@ -300,36 +305,47 @@ func HandleAddTag(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("Parsing form: %v", err)
 	}
 
-	res, ok := r.Form["tag"]
+	res, ok := r.Form["temporary-tag"]
 	if !ok || len(res) < 1 {
-		log.Fatal("'tag' was not a provided paramter")
+		log.Fatal("'temporary-tag' was not a provided paramter")
 	}
 
 	tag := res[0]
 
 	fmt.Fprintf(w, `
+		<input type="text"
+		 	hx-swap-oob="true"
+			id="tag-input" 
+			class="timer-form-input"
+			name="temporary-tag" 
+			placeholder="tags" 
+			maxlength="255"
+		/>
+
 	 	<div class="tag-container">
-			<input type="text" class="tag-display" name="tag" value="%s" readonly style="width: %dch"/>
-			<svg 
-				class="button-tag-remove"
-			 	hx-get="/removeTag"
-				hx-target="closest .tag-container"
-				hx-swap="outerHTML"
-				fill="#000000" 
-				height="71px" 
-				width="71px" 
-				version="1.1" 
-				xmlns="http://www.w3.org/2000/svg" 
-				xmlns:xlink="http://www.w3.org/1999/xlink" 
-				viewBox="0 0 31.112 31.112" 
-				xml:space="preserve"
-			>
-				<g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-				<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-				<g id="SVGRepo_iconCarrier"> 
-					<polygon points="31.112,1.414 29.698,0 15.556,14.142 1.414,0 0,1.414 14.142,15.556 0,29.698 1.414,31.112 15.556,16.97 29.698,31.112 31.112,29.698 16.97,15.556 "></polygon> 
-				</g>
-			</svg>
+			<div class="tag-wrapper">
+				<input type="text" class="tag-display" name="tag" value="%s" readonly style="width: %dch"/>
+				<svg 
+					class="button-tag-remove"
+			 		hx-get="/removeTag"
+					hx-target="closest .tag-container"
+					hx-swap="outerHTML"
+					fill="#000000" 
+					height="71px" 
+					width="71px" 
+					version="1.1" 
+					xmlns="http://www.w3.org/2000/svg" 
+					xmlns:xlink="http://www.w3.org/1999/xlink" 
+					viewBox="0 0 31.112 31.112" 
+					xml:space="preserve"
+				>
+					<g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+					<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+					<g id="SVGRepo_iconCarrier"> 
+						<polygon points="31.112,1.414 29.698,0 15.556,14.142 1.414,0 0,1.414 14.142,15.556 0,29.698 1.414,31.112 15.556,16.97 29.698,31.112 31.112,29.698 16.97,15.556 "></polygon> 
+					</g>
+				</svg>
+			</div>
 		</div>
 	`, tag, utf8.RuneCountInString(tag))
 }

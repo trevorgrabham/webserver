@@ -21,10 +21,23 @@
         shrinkFontSize();
       });
       document.addEventListener("htmx:before-request", function (event) {
-        console.log(`Event from ${event.detail.elt.id}`);
         if (event.detail.elt.id === "timer-form") {
-          updateTimerInput();
+          checkOverflowing();
           prepareDashboard();
+        }
+      });
+      document.addEventListener("htmx:after-request", function (event) {
+        if (
+          event.detail.elt.id === "add-tag-button" ||
+          event.detail.elt.id === "tags-container"
+        ) {
+          checkOverflowing();
+        }
+        if (
+          event.target.id === "timer-container" &&
+          !event.target.classList.contains("settling")
+        ) {
+          updateTimerInput();
         }
       });
       function startTimer() {
@@ -62,11 +75,12 @@
         return hours + ":" + minutesString + ":" + secondsString;
       }
       function updateTimer() {
+        timer = document.getElementById("timer-display");
         timer.innerHTML = formatTime();
         shrinkFontSize();
       }
       function shrinkFontSize() {
-        if (typeof timer === "undefined") {
+        if (!timer) {
           timer = document.getElementById("timer-display");
         }
         timer.style.fontSize = "5em";
@@ -79,10 +93,16 @@
           timer.style.fontSize = fontSize + "em";
         }
       }
+      function checkOverflowing() {
+        let tagContainer = document.getElementById("tags-wrapper");
+        tagContainer.scrollHeight > tagContainer.clientHeight
+          ? tagContainer.classList.add("overflowing")
+          : tagContainer.classList.remove("overflowing");
+      }
       function updateTimerInput() {
-        document
-          .getElementById("hidden-timer")
-          .setAttribute("value", timer.innerHTML);
+        let hidden = document.getElementById("hidden-timer");
+        if (!hidden) return;
+        hidden.setAttribute("value", timer.innerHTML);
       }
       function checkDateExists() {
         let timeString = document.getElementById("timer-display").innerHTML;
@@ -99,11 +119,6 @@
         startDate = new Date(new Date() - timeDiff).toLocaleDateString(
           "en-CA",
           { year: "numeric", month: "2-digit", day: "2-digit" }
-        );
-        console.log(
-          document.getElementById(`date-${startDate}`) != null
-            ? `Element already exists for ${startDate} day`
-            : "No element exists yet"
         );
         return document.getElementById(`date-${startDate}`) != null;
       }

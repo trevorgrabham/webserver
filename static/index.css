@@ -1,4 +1,6 @@
 @media screen and (max-width: 500px) {
+  /* || Start general styling || */
+
   :root {
     font-size: 16px;
     --background-color: #222222;
@@ -12,9 +14,14 @@
     );
   }
 
-  body {
+  * {
     margin: 0;
+    box-sizing: border-box;
   }
+
+  /* ||  End general styling || */
+
+  /* || Start timer || */
 
   #timer-container {
     width: 80vw;
@@ -31,7 +38,6 @@
   }
 
   #timer-container > * {
-    box-sizing: border-box;
     width: 100%;
   }
 
@@ -61,6 +67,8 @@
     background-color: #0000;
     border: none;
     border-radius: 50%;
+    padding-block: 0;
+    padding-inline: 0;
     svg {
       height: 20vw;
       width: 20vw;
@@ -71,10 +79,14 @@
 
   .svg-wrapper:hover {
     svg {
-      fill: green;
+      fill: var(--timer-color);
       transform: scale(1.05);
     }
   }
+
+  /* || End timer || */
+
+  /* || Start timer form || */
 
   p:has(+ #timer-form) {
     grid-row: 1 / 2;
@@ -86,5 +98,136 @@
     grid-template-columns: 1fr;
     grid-template-rows: repeat(8, 1fr);
     place-items: center;
+    height: 100%;
+    margin-block-end: 0;
   }
+
+  #timer-form > * {
+    width: 95%;
+  }
+
+  .timer-form-input-row input:not(.tag-display) {
+    min-height: 2.5lh;
+    background-color: #0000;
+    color: white;
+    border: 1px solid white;
+    border-radius: 0.5lh;
+    padding-block: 0;
+    padding-inline: 0;
+    padding-left: 1lh;
+  }
+
+  /* || Start activity-input-container || */
+
+  #activity-input-container {
+    grid-row: 1 / 4;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #activity-input {
+    flex: 0;
+    width: 100%;
+    margin-top: 10vw;
+    margin-bottom: 5vw;
+  }
+
+  #tags-wrapper {
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .overflowing {
+    border-radius: 2.5vw;
+    box-shadow: inset 2px 2px #0003, 2px 2px #7771;
+  }
+
+  #tags-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: start;
+    column-gap: 4vw;
+    row-gap: 2vw;
+  }
+
+  .tag-container {
+    width: fit-content;
+    background-color: white;
+    border-radius: 5vw;
+  }
+
+  .tag-wrapper {
+    display: flex;
+    align-items: center;
+    height: 1.5lh;
+    width: fit-content;
+  }
+
+  .tag-display {
+    height: 100%;
+    padding: 0;
+    padding-block: 0;
+    padding-inline: 0;
+    padding-inline-start: 1ch;
+    border: none;
+    box-sizing: content-box;
+    font-family: monospace;
+    background-color: #0000;
+  }
+
+  .button-tag-remove {
+    box-sizing: content-box;
+    aspect-ratio: 1 / 1;
+    height: 0.75lh;
+    width: auto;
+    padding-inline: 1ch;
+  }
+
+  .button-tag-remove:hover {
+    fill: red;
+    transform: scale(1.05);
+  }
+
+  /* || End activity-input-container || */
+
+  /* || Start tag-input-container || */
+
+  #tag-input-container {
+    grid-row: 4 / 6;
+    display: flex;
+    align-items: center;
+    gap: 3vw;
+  }
+
+  #tag-input {
+    flex: 1;
+  }
+
+  #add-tag-svg {
+    aspect-ratio: 1 / 1;
+    height: 2.5lh;
+    width: auto;
+    overflow: visible;
+  }
+
+  /* || End tag-activity-container || */
+
+  /* || Start timer-form-submit-container || */
+
+  #timer-form-submit-container {
+    grid-row: 6 / 8;
+    display: flex;
+    justify-content: space-evenly;
+    padding-inline: 5vw;
+  }
+
+  #reset-button:hover {
+    fill: red;
+  }
+
+  /* || End timer-form-submit-container || */
+
+  /* || End timer form || */
 }
