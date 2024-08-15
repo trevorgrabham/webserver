@@ -17,27 +17,34 @@
       var seconds = 0;
       var startDate = "";
       window.addEventListener("resize", () => {
-        timer.style.fontSize = "5em";
+        document.getElementById("timer-display").style.fontSize = "5em";
         shrinkFontSize();
       });
       document.addEventListener("htmx:before-request", function (event) {
         if (event.detail.elt.id === "timer-form") {
-          checkOverflowing();
+          // checkOverflowing();
           prepareDashboard();
         }
       });
       document.addEventListener("htmx:after-request", function (event) {
-        if (
-          event.detail.elt.id === "add-tag-button" ||
-          event.detail.elt.id === "tags-container"
-        ) {
+        if (event.detail.pathInfo.requestPath === "/removeTag") {
           checkOverflowing();
         }
-        if (
-          event.target.id === "timer-container" &&
-          !event.target.classList.contains("settling")
-        ) {
+      });
+      document.addEventListener("htmx:after-settle", function (event) {
+        console.log(event);
+        console.log(event.detail.pathInfo.requestPath);
+        if (event.detail.pathInfo.requestPath === "/addTag") {
+          checkOverflowing();
+        }
+        if (event.detail.pathInfo.requestPath === "/stopTimer") {
           updateTimerInput();
+        }
+        if (event.detail.pathInfo.requestPath === "/submitActivity") {
+          document.getElementById("dashboard-section").scrollTop = 0;
+        }
+        if (event.target.id === "dashboard-section") {
+          setDashboardWidth();
         }
       });
       function startTimer() {
@@ -135,11 +142,20 @@
           }
         }
       }
+      function setDashboardWidth() {
+        var bars = document.querySelectorAll(".duration-bar");
+        bars.forEach((bar) => {
+          bar.style.setProperty(
+            "--default-width",
+            bar.getAttribute("data-percentage") + "%"
+          );
+        });
+      }
     </script>
     <link rel="stylesheet" href="./index.css" />
   </head>
   <body>
-    <div id="timer-container">
+    <div id="timer-container" class="section-container">
       <p
         id="timer-display"
         _="on startTimer call startTimer() then 
@@ -189,6 +205,7 @@
     </div>
     <div
       id="dashboard-section"
+      class="section-container"
       hx-get="/dashboard?maxItems=50"
       hx-trigger="load"
     ></div>

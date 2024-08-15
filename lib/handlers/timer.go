@@ -448,7 +448,7 @@ func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
 		prevId, currId, duration int64
 		description, t string
 	)
-	card := CardData{Day: timer.day}
+	card := CardData{Day: timer.day, TotalHours: float64(timer.duration)/60}
 	for dataRows.Next() {
 		err := dataRows.Scan(&currId, &duration, &description, &t)
 		if err != nil {
@@ -457,6 +457,7 @@ func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
 		card.Tags = append(card.Tags, t)
 		if prevId != currId {
 			card.Activities = append(card.Activities, ActivityData{Duration: duration, Description: description})
+			card.TotalHours += float64(duration)/60
 		}
 		prevId = currId
 	}
@@ -495,19 +496,23 @@ func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	templateString := `<div id="date-{{.Day}}" class="card-container" hx-swap-oob="true">
-		<h2 class="card-date">{{.Day}}</h2>
-		<div class="activities-container">
-			{{range .Activities}}
-			<span class="duration-bar" data-dur="{{.Duration}}" data-desc="{{.Description}}"></span>
-			{{end}}
-		</div>
-		<div class="tags-container">
-			{{range .Tags}}
-			<span class="tag">{{.}}</span>
-			{{end}}
-		</div>
-	</div>`
+	templateString := `
+		<div id="date-{{.Day}}" class="card-container" hx-swap-oob="true">
+			<div class="card-header">
+				<h2 class="card-date">{{.Day}}</h2>
+				<h2 class="card-total-hours">{{printf "%.1fh" .TotalHours}}</h2>
+			</div>
+			<div class="activities-container">
+				{{range .Activities}}
+				<span class="duration-bar" data-dur="{{.Duration}}" data-desc="{{.Description}}"></span>
+				{{end}}
+			</div>
+			<div class="tags-container">
+				{{range .Tags}}
+				<span class="tag">{{.}}</span>
+				{{end}}
+			</div>
+		</div>`
 
 	cardTemplate := template.Must(template.New("cardtemplate").Parse(templateString))
 	if err := cardTemplate.Execute(w, card); err != nil {

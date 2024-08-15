@@ -11,22 +11,29 @@ import (
 )
 
 const cardTemplate = `{{range .}}
-<div id="date-{{.Day}}" class="card-container">
-	<h2 class="card-date">{{.Day}}</h2>
-	<div class="activities-container">
-		{{range .Activities}}
-		<span class="duration-bar" data-dur="{{.Duration}}" data-desc="{{.Description}}"></span>
-		{{end}}
-	</div>
-	<div class="tags-container">
-		{{range .Tags}}
-		<span class="tag">{{.}}</span>
-		{{end}}
-	</div>
-</div>
+	{{ with $card := . }}
+		<div id="date-{{.Day}}" class="card-container">
+			<div class="card-header">
+				<h2 class="card-date">{{.Day}}</h2>
+				<h2 class="card-total-hours">{{printf "%.1fh" .TotalHours}}</h2>
+			</div>
+			<div class="card-data-container">
+				<div class="activities-container">
+					{{range .Activities}}
+						<div class="duration-bar" title="{{.Description}}" data-percentage="{{fractionalTime .Duration $card.TotalHours}}"></div>
+					{{end}}
+				</div>
+				<div class="tags-container">
+					{{range .Tags}}
+					<span class="tag">{{.}}</span>
+					{{end}}
+				</div>
+			</div>
+		</div>
+	{{end}}
 {{end}}`
 
-var CardTemplate = template.Must(template.New("cardtemplate").Parse(cardTemplate))
+var CardTemplate = template.Must(template.New("cardtemplate").Funcs(template.FuncMap{"fractionalTime": func(n int64, total float64) float64 { return float64(n)/60/total*100}}).Parse(cardTemplate))
 
 type ActivityData struct {
 	Duration		int64
@@ -37,6 +44,7 @@ type CardData struct {
 	Day						string
 	Activities		[]ActivityData	
 	Tags					Tags					
+	TotalHours		float64
 }
 
 type Tags []string
@@ -118,6 +126,7 @@ func HandleDashboard(w http.ResponseWriter, r *http.Request) {
 				Duration: dur,
 				Description: desc,
 			})
+			card.TotalHours += float64(dur)/60
 
 			// get tags for each session for each day
 			tagRows, err := db.Query("SELECT tag FROM activity_tag WHERE activity_id = ?", id)
