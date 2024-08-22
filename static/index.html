@@ -10,15 +10,15 @@
       crossorigin="anonymous"
     ></script>
     <script defer>
-      var timer;
+      var timer = document.getElementById("timer-display");
       var startTime;
       var hours = 0;
       var minutes = 0;
       var seconds = 0;
       var startDate = "";
       window.addEventListener("resize", () => {
-        document.getElementById("timer-display").style.fontSize = "5em";
-        shrinkFontSize();
+        var timer = document.getElementById("timer-display");
+        shrinkFontSize(timer);
       });
       document.addEventListener("htmx:before-request", function (event) {
         if (event.detail.elt.id === "timer-form") {
@@ -84,20 +84,17 @@
       function updateTimer() {
         timer = document.getElementById("timer-display");
         timer.innerHTML = formatTime();
-        shrinkFontSize();
+        shrinkFontSize(timer);
       }
-      function shrinkFontSize() {
-        if (!timer) {
-          timer = document.getElementById("timer-display");
-        }
-        timer.style.fontSize = "5em";
-        while (timer.scrollWidth > timer.clientWidth) {
-          let fontSizeString = timer.style.fontSize;
+      function shrinkFontSize(element) {
+        element.style.fontSize = "5em";
+        while (element.scrollWidth > element.clientWidth) {
+          let fontSizeString = element.style.fontSize;
           let fontSize = parseInt(
             fontSizeString.substring(0, fontSizeString.length - 2)
           );
           fontSize *= 0.9;
-          timer.style.fontSize = fontSize + "em";
+          element.style.fontSize = fontSize + "em";
         }
       }
       function checkOverflowing() {
@@ -147,7 +144,7 @@
         bars.forEach((bar) => {
           bar.style.setProperty(
             "--default-width",
-            bar.getAttribute("data-percentage") + "%"
+            bar.getAttribute("data-percentage")
           );
         });
       }
@@ -163,7 +160,7 @@
               call updateTimer()
               wait 1s
             end"
-        onload="shrinkFontSize()"
+        onload="shrinkFontSize(this)"
         style="font-size: 5em"
       >
         00:00

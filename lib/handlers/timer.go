@@ -448,7 +448,7 @@ func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
 		prevId, currId, duration int64
 		description, t string
 	)
-	card := CardData{Day: timer.day, TotalHours: float64(timer.duration)/60}
+	card := CardData{Day: timer.day, TotalMins: timer.duration}
 	for dataRows.Next() {
 		err := dataRows.Scan(&currId, &duration, &description, &t)
 		if err != nil {
@@ -457,7 +457,7 @@ func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
 		card.Tags = append(card.Tags, t)
 		if prevId != currId {
 			card.Activities = append(card.Activities, ActivityData{Duration: duration, Description: description})
-			card.TotalHours += float64(duration)/60
+			card.TotalMins += duration
 		}
 		prevId = currId
 	}
@@ -497,22 +497,28 @@ func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	templateString := `
-		<div id="date-{{.Day}}" class="card-container" hx-swap-oob="true">
-			<div class="card-header">
-				<h2 class="card-date">{{.Day}}</h2>
-				<h2 class="card-total-hours">{{printf "%.1fh" .TotalHours}}</h2>
+	 {{ if gt .TotalMins 0 }}
+			<div id="date-{{.Day}}" class="card-container">
+				<div class="card-header">
+					<h2 class="card-date">{{.Day}}</h2>
+					<h2 class="card-total-hours">{{formatTotalMin .TotalMins}}</h2>
+				</div>
+				<div class="card-data-container">
+					<div class="activities-container">
+						{{range .Activities}}
+							<div class="duration-bar" data-percentage="{{.Duration}}">
+								<div class="bar-text">{{.Description}}</div>
+							</div>
+						{{end}}
+					</div>
+					<div class="tags-container">
+						{{range .Tags}}
+						<div class="tag">{{.}}</div>
+						{{end}}
+					</div>
+				</div>
 			</div>
-			<div class="activities-container">
-				{{range .Activities}}
-				<span class="duration-bar" data-dur="{{.Duration}}" data-desc="{{.Description}}"></span>
-				{{end}}
-			</div>
-			<div class="tags-container">
-				{{range .Tags}}
-				<span class="tag">{{.}}</span>
-				{{end}}
-			</div>
-		</div>`
+		{{end}}`
 
 	cardTemplate := template.Must(template.New("cardtemplate").Parse(templateString))
 	if err := cardTemplate.Execute(w, card); err != nil {

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -11,29 +12,50 @@ import (
 )
 
 const cardTemplate = `{{range .}}
-	{{ with $card := . }}
-		<div id="date-{{.Day}}" class="card-container">
-			<div class="card-header">
-				<h2 class="card-date">{{.Day}}</h2>
-				<h2 class="card-total-hours">{{printf "%.1fh" .TotalHours}}</h2>
-			</div>
-			<div class="card-data-container">
-				<div class="activities-container">
-					{{range .Activities}}
-						<div class="duration-bar" title="{{.Description}}" data-percentage="{{fractionalTime .Duration $card.TotalHours}}"></div>
+	 {{ if gt .TotalMins 0 }}
+			<div id="date-{{.Day}}" class="card-container">
+				<div class="card-header">
+					<h2 class="card-date">{{.Day}}</h2>
+					<h2 class="card-total-hours" style="color: var(--total-hours-{{ calcColor .TotalMins }})">{{formatTotalMin .TotalMins}}</h2>
+				</div>
+				<div class="card-data-container">
+					<div class="activities-container">
+						{{range .Activities}}
+							<div class="duration-bar" data-percentage="{{.Duration}}">
+								<div class="bar-text">{{.Description}}</div>
+							</div>
+						{{end}}
+					</div>
+					{{ if .Tags }}
+						<div class="tags-container">
+							{{range .Tags}}
+							<div class="tag">{{.}}</div>
+							{{end}}
+						</div>
 					{{end}}
 				</div>
-				<div class="tags-container">
-					{{range .Tags}}
-					<span class="tag">{{.}}</span>
-					{{end}}
-				</div>
 			</div>
-		</div>
-	{{end}}
-{{end}}`
+		{{end}}
+	{{end}}`
 
-var CardTemplate = template.Must(template.New("cardtemplate").Funcs(template.FuncMap{"fractionalTime": func(n int64, total float64) float64 { return float64(n)/60/total*100}}).Parse(cardTemplate))
+var CardTemplate = template.Must(template.New("cardtemplate").Funcs(template.FuncMap{"formatTotalMin": func(t int64) string {
+	if t > 60 {
+		return fmt.Sprintf("%dh%dm", t/60, t%60)
+	} 
+	return fmt.Sprintf("%dm", t%60)
+},
+"calcColor": func(n int64) string {
+	if n > 90 {
+		return "great"
+	}
+	if n > 60 {
+		return "good"
+	}
+	if n > 30 {
+		return "ok"
+	}
+	return "bad"
+}}).Parse(cardTemplate))
 
 type ActivityData struct {
 	Duration		int64
@@ -44,7 +66,7 @@ type CardData struct {
 	Day						string
 	Activities		[]ActivityData	
 	Tags					Tags					
-	TotalHours		float64
+	TotalMins			int64
 }
 
 type Tags []string
@@ -126,7 +148,7 @@ func HandleDashboard(w http.ResponseWriter, r *http.Request) {
 				Duration: dur,
 				Description: desc,
 			})
-			card.TotalHours += float64(dur)/60
+			card.TotalMins += dur
 
 			// get tags for each session for each day
 			tagRows, err := db.Query("SELECT tag FROM activity_tag WHERE activity_id = ?", id)

@@ -5,7 +5,7 @@
     font-size: 16px;
     --background-color: #222222;
     --timer-color: #0fff50aa;
-    --num-dashboard-cards: 5;
+    --font-color-grey: #aaaaaa;
     --duration-color-1: #ff9cee;
     --duration-color-2: #b28dff;
     --duration-color-3: #ace7ff;
@@ -13,6 +13,12 @@
     --duration-color-5: #aff8d8;
     --duration-color-6: #e7ffac;
     --duration-color-7: #ffabab;
+    --total-hours-great: #17b293;
+    --total-hours-good: #fcd32d;
+    --total-hours-ok: #fd842b;
+    --total-hours-bad: #d73930;
+    --dashboard-card-gap: 5vw;
+    --num-cards: 4;
     background-color: var(--background-color);
     background-image: repeating-linear-gradient(
       #0000,
@@ -246,20 +252,30 @@
   #dashboard-section {
     width: 100vw;
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 100%;
     grid-auto-rows: calc(
-      calc(90vh - calc(calc(var(--num-dashboard-cards) - 1) * 2.5vw)) /
-        var(--num-dashboard-cards)
+      calc(90vh - calc(calc(var(--num-cards) - 1) * var(--dashboard-card-gap))) /
+        var(--num-cards)
     );
-    row-gap: 2.5vw;
+    row-gap: var(--dashboard-card-gap);
     overflow-y: auto;
     scroll-snap-type: y proximity;
   }
+
+  /* || Start dashboard card || */
 
   .card-container {
     scroll-snap-align: start;
     padding: 2.5vw;
     position: relative;
+    border: 3px solid var(--font-color-grey);
+    border-radius: 2vw;
+    box-shadow: 3px 4.5px 4.5px -1.5px #0008;
+    font-family: monospace;
+    color: var(--font-color-grey);
+    margin-inline: 2.5vw;
+    display: flex;
+    flex-direction: column;
   }
 
   .card-header {
@@ -274,11 +290,12 @@
     top: 2lh;
     left: 2.5vw;
     right: 2.5vw;
-    border: 1px solid black;
+    border: 1px solid var(--font-color-grey);
     content: "";
   }
 
-  .card-total-hours {
+  .card-data-container {
+    margin-block: auto;
   }
 
   .activities-container {
@@ -288,14 +305,13 @@
     align-items: stretch;
     margin-block: 5vw;
     position: relative;
+    border-radius: 5vw;
+    box-shadow: 2px 3px 3px -1px #0008;
+    overflow: hidden;
   }
 
   .duration-bar {
-    width: var(--default-width);
-    position: relative;
-    transition-property: transform, width;
-    transition-duration: 500ms;
-    transition-timing-function: ease;
+    flex: var(--default-width);
   }
 
   .duration-bar:nth-child(7n + 1) {
@@ -326,28 +342,65 @@
     background-color: var(--duration-color-7);
   }
 
-  .duration-bar:hover {
+  .activities-container:hover .duration-bar:not(:hover) {
+    flex: 0;
+    transition: flex 750ms ease;
+  }
+
+  @keyframes appear {
+    100% {
+      opacity: 1;
+      z-index: 2;
+    }
+  }
+
+  .bar-text {
     position: absolute;
     top: 0;
     bottom: 0;
     left: 0;
-    width: 100%;
-    transform: scale(1, 1.25);
-    z-index: 2;
+    right: 0;
+    opacity: 0;
+    z-index: -1;
+    text-align: center;
+    place-content: center;
+    font-weight: bold;
+    color: black;
   }
 
-  .duration-bar::after {
-    display: none;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    content: attr(title);
-    transition: display 500ms ease;
+  .duration-bar:hover .bar-text {
+    animation-name: appear;
+    animation-duration: 750ms;
+    animation-timing-function: ease;
+    animation-fill-mode: forwards;
+    animation-delay: 250ms;
   }
 
-  .duration-bar:hover::after {
-    display: inline;
+  .tags-container {
+    text-wrap: nowrap;
+    overflow-x: auto;
+    text-align: center;
+    padding: 2.5vw;
+    border-radius: 2.5vw;
+    box-shadow: inset 2px 3px 3px -1px #0008, 2px 3px 3px -1px #3336;
   }
+
+  .tag {
+    display: inline-block;
+    border-radius: 5vw;
+    border: 2px solid var(--font-color-grey);
+    box-shadow: 2px 3px 3px -1px #0008;
+    padding: 1.5vw 3vw;
+    margin-right: 2.5vw;
+    font-weight: 300;
+    font-size: 0.75em;
+  }
+
+  .tag:last-child {
+    margin-right: 0;
+  }
+
+  /* || End dashboard card || */
+
   /* || End dashboard || */
 }

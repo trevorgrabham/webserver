@@ -1,6 +1,6 @@
 ## Features
 
-- [ ] Dashboard
+- [x] Dashboard
 
 - [ ] Autocomplete suggestions for the activity and tags
 
@@ -32,12 +32,14 @@
 
 - [x] Add variable colors to the `.card-container` activity bar
 
-- [ ] Add the tag scroll container to each `.card-container` dashboard item
+- [x] Add the tag scroll container to each `.card-container` dashboard item
 
 - [x] Add the activity tags to each activity on `:hover`
 
-- [ ] Add different colors to the `.card-total-hours` text
+- [x] Add different colors to the `.card-total-hours` text
 
-- [ ] Fix the width of the `.duration-bar` for when the total hours = 0
+- [x] Fix the width of the `.duration-bar` for when the total hours = 0
 
-- [ ] Get each duration in the `.duration-bar` to expand out from its center, not just left to right
+- [x] Get each duration in the `.duration-bar` to expand out from its center, not just left to right
+
+- [ ] Make the colors for the `#dashboard-section` a bit prettier
