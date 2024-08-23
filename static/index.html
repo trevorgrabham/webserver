@@ -9,150 +9,11 @@
       integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2"
       crossorigin="anonymous"
     ></script>
-    <script defer>
-      var timer = document.getElementById("timer-display");
-      var startTime;
-      var hours = 0;
-      var minutes = 0;
-      var seconds = 0;
-      var startDate = "";
-      window.addEventListener("resize", () => {
-        var timer = document.getElementById("timer-display");
-        shrinkFontSize(timer);
-      });
-      document.addEventListener("htmx:before-request", function (event) {
-        if (event.detail.elt.id === "timer-form") {
-          // checkOverflowing();
-          prepareDashboard();
-        }
-      });
-      document.addEventListener("htmx:after-request", function (event) {
-        if (event.detail.pathInfo.requestPath === "/removeTag") {
-          checkOverflowing();
-        }
-      });
-      document.addEventListener("htmx:after-settle", function (event) {
-        console.log(event);
-        console.log(event.detail.pathInfo.requestPath);
-        if (event.detail.pathInfo.requestPath === "/addTag") {
-          checkOverflowing();
-        }
-        if (event.detail.pathInfo.requestPath === "/stopTimer") {
-          updateTimerInput();
-        }
-        if (event.detail.pathInfo.requestPath === "/submitActivity") {
-          document.getElementById("dashboard-section").scrollTop = 0;
-        }
-        if (event.target.id === "dashboard-section") {
-          setDashboardWidth();
-        }
-      });
-      function startTimer() {
-        timer = document.getElementById("timer-display");
-        startTime =
-          Date.now() -
-          seconds * 1000 -
-          minutes * 1000 * 60 -
-          hours * 1000 * 60 * 60;
-      }
-      function resetTimer() {
-        seconds = 0;
-        minutes = 0;
-        hours = 0;
-      }
-      function formatTime() {
-        var elapsedTime = Date.now() - startTime;
-        seconds = Math.floor(elapsedTime / 1000) % 60;
-        minutes = Math.floor(elapsedTime / 1000 / 60) % 60;
-        hours = Math.floor(elapsedTime / 1000 / 60 / 60) % 24;
-        var secondsString, minutesString;
-        if (seconds < 10) {
-          secondsString = "0" + seconds;
-        } else {
-          secondsString = seconds.toString();
-        }
-        if (minutes < 10) {
-          minutesString = "0" + minutes;
-        } else {
-          minutesString = minutes.toString();
-        }
-        if (hours < 1) {
-          return minutesString + ":" + secondsString;
-        }
-        return hours + ":" + minutesString + ":" + secondsString;
-      }
-      function updateTimer() {
-        timer = document.getElementById("timer-display");
-        timer.innerHTML = formatTime();
-        shrinkFontSize(timer);
-      }
-      function shrinkFontSize(element) {
-        element.style.fontSize = "5em";
-        while (element.scrollWidth > element.clientWidth) {
-          let fontSizeString = element.style.fontSize;
-          let fontSize = parseInt(
-            fontSizeString.substring(0, fontSizeString.length - 2)
-          );
-          fontSize *= 0.9;
-          element.style.fontSize = fontSize + "em";
-        }
-      }
-      function checkOverflowing() {
-        let tagContainer = document.getElementById("tags-wrapper");
-        tagContainer.scrollHeight > tagContainer.clientHeight
-          ? tagContainer.classList.add("overflowing")
-          : tagContainer.classList.remove("overflowing");
-      }
-      function updateTimerInput() {
-        let hidden = document.getElementById("hidden-timer");
-        if (!hidden) return;
-        hidden.setAttribute("value", timer.innerHTML);
-      }
-      function checkDateExists() {
-        let timeString = document.getElementById("timer-display").innerHTML;
-        let timeSegments = timeString.split(":");
-        let timeDiff = 0;
-        if (timeSegments.length == 3) {
-          timeDiff += 1000 * parseInt(timeSegments[2]);
-          timeDiff += 60 * 1000 * parseInt(timeSegments[1]);
-          timeDiff += 60 * 60 * 1000 * parseInt(timeSegments[0]);
-        } else {
-          timeDiff += 1000 * parseInt(timeSegments[1]);
-          timeDiff += 60 * 1000 * parseInt(timeSegments[0]);
-        }
-        startDate = new Date(new Date() - timeDiff).toLocaleDateString(
-          "en-CA",
-          { year: "numeric", month: "2-digit", day: "2-digit" }
-        );
-        return document.getElementById(`date-${startDate}`) != null;
-      }
-      function prepareDashboard() {
-        if (!checkDateExists()) {
-          let parent = document.getElementById("dashboard-section");
-          let child = document.createElement("div");
-          child.id = `date-${startDate}`;
-          startDate = "";
-          if (parent.firstChild) {
-            parent.insertBefore(child, parent.firstChild);
-          } else {
-            parent.appendChild(child);
-          }
-        }
-      }
-      function setDashboardWidth() {
-        var bars = document.querySelectorAll(".duration-bar");
-        bars.forEach((bar) => {
-          bar.style.setProperty(
-            "--default-width",
-            bar.getAttribute("data-percentage")
-          );
-        });
-      }
-    </script>
+    <script defer src="./index.js"></script>
     <link rel="stylesheet" href="./index.css" />
   </head>
   <body>
-    <div id="timer-container" class="section-container">
+    <section id="timer-container" class="section-container">
       <p
         id="timer-display"
         _="on startTimer call startTimer() then 
@@ -160,8 +21,7 @@
               call updateTimer()
               wait 1s
             end"
-        onload="shrinkFontSize(this)"
-        style="font-size: 5em"
+        onload="resizeFont(this)"
       >
         00:00
       </p>
@@ -199,12 +59,12 @@
           </svg>
         </button>
       </div>
-    </div>
-    <div
+    </section>
+    <section
       id="dashboard-section"
       class="section-container"
       hx-get="/dashboard?maxItems=50"
       hx-trigger="load"
-    ></div>
+    ></section>
   </body>
 </html>

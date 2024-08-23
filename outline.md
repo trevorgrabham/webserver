@@ -43,3 +43,5 @@
 - [x] Get each duration in the `.duration-bar` to expand out from its center, not just left to right
 
 - [ ] Make the colors for the `#dashboard-section` a bit prettier
+
+- [ ] Make the timer auto-reset if timer < 1 min
