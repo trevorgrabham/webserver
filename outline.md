@@ -8,7 +8,7 @@
 
 - [ ] Accounts
 
-- [ ] Tag aggregate section
+- [x] Tag aggregate section
 
 - [ ] Graphical tabs for all activities, or filter for specific tags
 
@@ -45,3 +45,5 @@
 - [ ] Make the colors for the `#dashboard-section` a bit prettier
 
 - [ ] Make the timer auto-reset if timer < 1 min
+
+- [ ] Make the `.tag-summary-tag-title` text expand if on hover if they are hidden

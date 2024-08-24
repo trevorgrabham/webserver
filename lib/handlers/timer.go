@@ -232,7 +232,7 @@ func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
 	if !noTags {
 		for _, tag := range fields[2] {
 			if !tags.Contains(tag) {
-				tags = append(tags, util.TagMetaData{Id: -1, Tag: tag})
+				tags = append(tags, util.TagMetaData{Id: -1, Tag: tag, Count: 1})
 			}
 		}
 	}

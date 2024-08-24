@@ -109,7 +109,7 @@ func GetDayData(day string) (activities []util.ActivityMetaData, err error) {
 		if DEBUG {
 			fmt.Printf("Same activity for day %s, adding new tag %s\n", day, tag)
 		}
-		activities[len(activities)-1].Tags = append(activities[len(activities)-1].Tags, util.TagMetaData{Id: -1, Tag: tag})
+		activities[len(activities)-1].Tags = append(activities[len(activities)-1].Tags, util.TagMetaData{Id: -1, Tag: tag, Count: 1})
 	}
 	if rows.Err() != nil {
 		err = fmt.Errorf("GetDayData(%v): %v", day, rows.Err())
@@ -159,6 +159,77 @@ func GetCardData(maxItems int64) (cards []util.CardMetaData, err error) {
 	}
 	if rows.Err() != nil {
 		return nil, fmt.Errorf("GetCardData(%d): %v", maxItems, err)
+	}
+	return
+}
+
+func GetTagData(offset int64) (tags util.TagSummaryData, err error) {
+	rows, err := DB.Query("SELECT tag, SUM(1) AS 'count' FROM activity_tag GROUP BY tag ORDER BY count DESC, tag LIMIT 10 OFFSET ?", offset)
+	if err != nil {
+		return util.TagSummaryData{}, fmt.Errorf("GetTagData(): %v", err) 
+	}
+	defer rows.Close()
+	var (
+		tag string 
+		count int64
+		totalNumTags int64
+		maxCount int64
+	)
+	for rows.Next() {
+		err := rows.Scan(&tag, &count)
+		if err != nil {
+			return util.TagSummaryData{}, fmt.Errorf("GetTagData(): %v", err)
+		}
+		tags.Tags = append(tags.Tags, util.TagMetaData{Id: -1, Tag: tag, Count: count})
+		totalNumTags += count
+		if count > maxCount {
+			maxCount = count
+		}
+	}
+	if rows.Err() != nil {
+		return util.TagSummaryData{}, fmt.Errorf("GetTagData(): %v", rows.Err())
+	}
+	tags.TotalCount = totalNumTags
+	tags.MaxCount = maxCount
+	return
+}
+
+func GetPreviousTags() (tags []string, err error) {
+	rows, err := DB.Query("SELECT DISTINCT tag FROM activity_tag")
+	if err != nil {
+		return nil, fmt.Errorf("GetPreviousTags(): %v", err)
+	}
+	defer rows.Close()
+	var tag string 
+	for rows.Next() {
+		err := rows.Scan(&tag)
+		if err != nil {
+			return nil, fmt.Errorf("GetPreviousTags(): %v", err)
+		}
+		tags = append(tags, tag)
+	}
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("GetPreviousTags(): %v", rows.Err())
+	}
+	return 
+}
+
+func GetPreviousActivities() (activites []string, err error) {
+	rows, err := DB.Query("SELECT DISTINCT description FROM timer_data")
+	if err != nil {
+		return nil, fmt.Errorf("GetPreviousActivities(): %v", err)
+	}
+	defer rows.Close()
+	var description string 
+	for rows.Next() {
+		err := rows.Scan(&description)
+		if err != nil {
+			return nil, fmt.Errorf("GetPreviousActivities(): %v", err)
+		}
+		activites = append(activites, description)
+	}
+	if rows.Err() !=  nil {
+		return nil, fmt.Errorf("GetPreviousActivities(): %v", rows.Err())
 	}
 	return
 }

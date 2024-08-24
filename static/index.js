@@ -109,6 +109,7 @@ function resizeFont(element) {
 }
 
 function checkOverflowing(element) {
+  console.log(`Checking ${el} is overflowing`);
   element.scrollHeight > element.clientHeight
     ? element.classList.add("overflowing")
     : element.classList.remove("overflowing");

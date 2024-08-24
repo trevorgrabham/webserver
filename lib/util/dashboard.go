@@ -2,7 +2,7 @@ package util
 
 import (
 	"fmt"
-	"text/template"
+	"html/template"
 )
 
 type Tags []TagMetaData
@@ -18,8 +18,9 @@ func (t Tags) Contains(s string) bool {
 }
 
 type TagMetaData struct {
-	Id  int64
-	Tag string
+	Id  		int64
+	Tag 		string
+	Count 	int64
 }
 
 type ActivityMetaData struct {
@@ -37,6 +38,12 @@ type CardMetaData struct {
 	Day							string
 }
 
+type TagSummaryData struct {
+	Tags 
+	TotalCount 			int64
+	MaxCount 				int64
+}
+
 func formatTotalMin(t int64) string {
 	if t > 60 { return fmt.Sprintf("%dh%dm", t/60, t%60) }
 	return fmt.Sprintf("%dm", t%60)
@@ -51,7 +58,7 @@ func calcColor(n int64) string {
 	}
 }
 
-const CardTemplate = `%s{{ if gt .TotalMins 0 }}
+const cardTemplate = `%s{{ if gt .TotalMins 0 }}
 			<div id="date-{{.Day}}" class="card-container"%s>
 				<div class="card-header">
 					<h2 class="card-date">{{.Day}}</h2>
@@ -73,8 +80,8 @@ const CardTemplate = `%s{{ if gt .TotalMins 0 }}
 				</div>
 			</div>
 		{{end}}%s`
-var SingleCardTemplate = fmt.Sprintf(CardTemplate, ``, ` hx-swap-oob="true" `, ``)
-var AllCardsTemplate = fmt.Sprintf(CardTemplate, `{{range .}}
+var singleCardTemplate = fmt.Sprintf(cardTemplate, ``, ` hx-swap-oob="true" `, ``)
+var allCardsTemplate = fmt.Sprintf(cardTemplate, `{{range .}}
 	`, ``, `
 	{{end}}`)
 
@@ -84,7 +91,7 @@ var AllCardsTemplateReady = template.Must(
 		"formatTotalMin": formatTotalMin,
 		"calcColor": calcColor,
 		}).
-	Parse(AllCardsTemplate))
+	Parse(allCardsTemplate))
 
 var SingleCardTemplateReady= template.Must(
 	template.New("allcardtemplate").
@@ -92,4 +99,4 @@ var SingleCardTemplateReady= template.Must(
 		"formatTotalMin": formatTotalMin,
 		"calcColor": calcColor,
 		}).
-	Parse(SingleCardTemplate))
+	Parse(singleCardTemplate))
