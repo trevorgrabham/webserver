@@ -9,7 +9,8 @@ const DisabledMoreTagsButton = `
 	<div 
 		id="load-tag-summary-button"
 		hx-swap-oob="true"
-	>No More Data<div>`
+		style="display: none;"
+	><div>`
 
 func normalizeCount(n int64, max int64) string {
 	if max == 0 {
@@ -17,8 +18,6 @@ func normalizeCount(n int64, max int64) string {
 	}
 	return fmt.Sprintf("%.2f", float64(n)/float64(max) * 100.0) + "%"
 }
-
-const tagDataTitle = "Tags"
 
 const tagSummaryTemplate = `
 	{{range .Tags}}
@@ -35,9 +34,8 @@ const tagSummaryTemplate = `
 		</div>
 	{{end}}`
 
-var allTagSummaryTemplate = fmt.Sprintf(`
+const allTagSummaryTemplate = `
 	<div id="tag-summary-container">
-		<h2 id="tag-summary-title">%s</h2>
 		<div id="tag-summary-data-container">
 				{{range .Tags}}
 					<div class="tag-summary-row">
@@ -66,7 +64,7 @@ var allTagSummaryTemplate = fmt.Sprintf(`
 			data-max-count="{{$.MaxCount}}"
 		>Load More<div>
 	</div>
-`, tagDataTitle)
+`
 
 var TagSummaryTemplateReady = template.Must(
 	template.New("tagsummarytemplate").

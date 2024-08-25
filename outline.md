@@ -47,3 +47,5 @@
 - [ ] Make the timer auto-reset if timer < 1 min
 
 - [ ] Make the `.tag-summary-tag-title` text expand if on hover if they are hidden
+
+- [ ] Animate the scrolling, so that when adding a new activity, it slowly scrolls to the top of the `#dashboard-section` and when loading more tags, it slowly scrolls to the bottom of the `#tag-summary-data-container`
