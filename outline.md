@@ -49,3 +49,7 @@
 - [ ] Make the `.tag-summary-tag-title` text expand if on hover if they are hidden
 
 - [ ] Animate the scrolling, so that when adding a new activity, it slowly scrolls to the top of the `#dashboard-section` and when loading more tags, it slowly scrolls to the bottom of the `#tag-summary-data-container`
+
+- [ ] Add some text shadow to the `#timer-display` to make it seem neon
+
+- [ ] Add some keypress listeners to the `#activity-input` so that we can change the focus on our autocomplete suggestions by pressing tab, enter, etc.

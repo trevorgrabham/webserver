@@ -2,10 +2,53 @@ package util
 
 import (
 	"fmt"
+	"html/template"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
 )
+
+type AutocompleteSuggestions struct {
+	Suggestions 				[]AutocompleteSuggestion
+	Length 							int
+}
+
+type AutocompleteSuggestion struct {
+	Option 					string 
+	MatchStart			int
+	MatchEnd 				int
+}
+
+func optionStart(option string, start int) string {
+	return option[:start]
+}
+
+func optionEnd(option string, end int) string {
+	return option[end:]
+}
+
+func optionMatch(option string, start, end int) string {
+	return option[start:end]
+}
+
+const autocompleteTemplate = `
+	<div id="activity-suggestions" data-len="{{.Length}}" data-curr="0">
+		{{range .Suggestions}}
+			<div class="autocomplete-option-container">
+				<div class="autocomplete-option">{{optionStart .Option .MatchStart}}<span class="matched-part">{{optionMatch .Option .MatchStart .MatchEnd}}</span>{{optionEnd .Option .MatchEnd}}</div>
+			</div>
+		{{end}}
+	</div>`
+
+var AutocompleteTemplateReady = template.Must(
+	template.New("autocompletetemplate").
+	Funcs(template.FuncMap{
+		"optionStart": optionStart,
+		"optionMatch": optionMatch,
+		"optionEnd": optionEnd,
+		}).
+	Parse(autocompleteTemplate))
 
 func FormHasFields(form map[string][]string, fields []string) (missingFields []string, values [][]string, err error) {
 	if form == nil {
@@ -53,4 +96,22 @@ func StartingTime(mins int) (startDate time.Time, err error) {
 	}
 	startDate = time.Now().Add(delta)
 	return
+}
+
+// Returns any members from 'list' in a sorted order, with those that match at the beginning of the member having a higher precedence than a match in the middle of the member
+func FilterFromPartialString(partial string, list []string) AutocompleteSuggestions {
+	beginningMatched := make([]AutocompleteSuggestion, 0)
+	anywhereMatched := make([]AutocompleteSuggestion, 0)
+	for i := range list {
+		switch index := strings.Index(list[i], partial); {
+		case index == 0:
+			beginningMatched = append(beginningMatched, AutocompleteSuggestion{Option: list[i], MatchStart: index, MatchEnd: index + len(partial)})
+		case index > 0:
+			anywhereMatched = append(anywhereMatched, AutocompleteSuggestion{Option: list[i], MatchStart: index, MatchEnd: index + len(partial)})
+		}
+	}
+	cmp := func(a, b AutocompleteSuggestion) int { return strings.Compare(a.Option, b.Option) }
+	slices.SortFunc(beginningMatched, cmp)
+	slices.SortFunc(anywhereMatched, cmp)
+	return AutocompleteSuggestions{Suggestions: append(beginningMatched, anywhereMatched...), Length: len(beginningMatched) + len(anywhereMatched)}
 }

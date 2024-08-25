@@ -144,11 +144,19 @@
   }
 
   #activity-input {
-    flex: 0;
     width: 100%;
     margin-top: 10vw;
     margin-bottom: 5vw;
   }
+
+  /* || Start #activity-suggestions || */
+
+  #activity-suggestions {
+    position: absolute;
+    background-color: var(--background-color);
+  }
+
+  /* || End #activity-suggestions || */
 
   #tags-wrapper {
     height: 100%;

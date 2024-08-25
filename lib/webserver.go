@@ -15,6 +15,8 @@ func StartServer() {
 	http.HandleFunc("/pauseTimer", handlers.HandlePauseTimer)
 	http.HandleFunc("/resumeTimer", handlers.HandleResumeTimer)
 	http.HandleFunc("/stopTimer", handlers.HandleStopTimer)
+	http.HandleFunc("/activitySuggestions", handlers.HandleActivitySuggestions)
+	http.HandleFunc("/tagSuggestions", handlers.HandleTagSuggestions)
 	http.HandleFunc("/addTag", handlers.HandleAddTag)
 	http.HandleFunc("/removeTag", handlers.HandleRemove)
 	http.HandleFunc("/resetTimer", handlers.HandleResetTimer)

@@ -12,7 +12,7 @@ import (
 	"github.com/trevorgrabham/webserver/webserver/lib/util"
 )
 
-const DEBUG = false
+const DEBUG = true
 
 func HandleRemove(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprintf(w, ``)
@@ -77,19 +77,27 @@ func HandleStopTimer(w http.ResponseWriter, _ *http.Request) {
     hx-post="/submitActivity"
     hx-target="#timer-container"
     action=""
+		autocomplete="off"
   >
     <input id="hidden-timer" name="timer" type="hidden" />
 		<div id="activity-input-container" class="timer-form-input-row">
 
-			<input type="text" 
-				id="activity-input"
-				class="timer-form-input"
-				name="activity" 
-				placeholder="What were you doing?" 
-				required
-				minlength="2"
-				maxlength="255"
-			/>
+			<div id="activity-input-wrapper">
+				<input type="text" 
+					id="activity-input"
+					class="timer-form-input"
+					hx-get="activitySuggestions"
+					hx-trigger="keyup changed delay:500ms"
+					hx-target="#activity-suggestions"
+					hx-swap="outerHTML"
+					name="activity" 
+					placeholder="What were you doing?" 
+					required
+					minlength="2"
+					maxlength="255"
+				/>
+				<div id="activity-suggestions"></div>
+			</div>
 	
 			<div id="tags-wrapper">
 				<div id="tags-container"></div>
@@ -146,6 +154,45 @@ func HandleStopTimer(w http.ResponseWriter, _ *http.Request) {
 		</div>
 	</form>
 	`, util.SVG("add-tag-svg", []string{"timer-button", "button-sub-form"}, nil, util.Plus), util.SVG("", []string{"timer-button", "button-form"}, nil, util.Success), util.SVG("reset-button", []string{"timer-button", "button-form"}, nil, util.Cancel))
+}
+
+func HandleActivitySuggestions(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		log.Fatalf("HandleActivitySuggestions(): parsing form : %v", err)
+	}
+	res, ok := r.Form["activity"]
+	if !ok || len(res[0]) < 1 {
+		fmt.Fprint(w)
+		return
+	}
+	activityPartial := res[0]
+
+	if DEBUG {
+		fmt.Printf("Searching for previous activities matching %s\n", activityPartial)
+	}
+
+	previousActivities, err := database.GetPreviousActivities()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	matches := util.FilterFromPartialString(activityPartial, previousActivities)
+	if matches.Length == 0 {
+		fmt.Fprint(w)
+		return
+	}
+
+	if DEBUG {
+		fmt.Printf("Found matches %v\n", matches)
+	}
+
+	if err := util.AutocompleteTemplateReady.Execute(w, matches); err != nil {
+		log.Fatalf("HandleActivitySuggestions(): %v", err)
+	}
+}
+
+func HandleTagSuggestions(w http.ResponseWriter, r *http.Request) {
+	
 }
 
 func HandleAddTag(w http.ResponseWriter, r *http.Request) {
