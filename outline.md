@@ -53,3 +53,7 @@
 - [ ] Add some text shadow to the `#timer-display` to make it seem neon
 
 - [ ] Add some keypress listeners to the `#activity-input` so that we can change the focus on our autocomplete suggestions by pressing tab, enter, etc.
+
+- [ ] Deal with the empty space that is created when a use does not have any data yet to display. Careful to make sure that things are styled properly when new data is created for the user
+
+- [ ] Add a tag to the `.tag-summary-section` when we submit a new timer to the database

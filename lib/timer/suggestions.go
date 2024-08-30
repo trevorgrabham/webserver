@@ -1,8 +1,7 @@
-package util
+package timer
 
 import (
 	"fmt"
-	"html/template"
 	"slices"
 	"strconv"
 	"strings"
@@ -19,36 +18,6 @@ type AutocompleteSuggestion struct {
 	MatchStart			int
 	MatchEnd 				int
 }
-
-func optionStart(option string, start int) string {
-	return option[:start]
-}
-
-func optionEnd(option string, end int) string {
-	return option[end:]
-}
-
-func optionMatch(option string, start, end int) string {
-	return option[start:end]
-}
-
-const autocompleteTemplate = `
-	<div id="activity-suggestions" data-len="{{.Length}}" data-curr="0">
-		{{range .Suggestions}}
-			<div class="autocomplete-option-container">
-				<div class="autocomplete-option">{{optionStart .Option .MatchStart}}<span class="matched-part">{{optionMatch .Option .MatchStart .MatchEnd}}</span>{{optionEnd .Option .MatchEnd}}</div>
-			</div>
-		{{end}}
-	</div>`
-
-var AutocompleteTemplateReady = template.Must(
-	template.New("autocompletetemplate").
-	Funcs(template.FuncMap{
-		"optionStart": optionStart,
-		"optionMatch": optionMatch,
-		"optionEnd": optionEnd,
-		}).
-	Parse(autocompleteTemplate))
 
 func FormHasFields(form map[string][]string, fields []string) (missingFields []string, values [][]string, err error) {
 	if form == nil {

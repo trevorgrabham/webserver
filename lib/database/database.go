@@ -7,7 +7,10 @@ import (
 	"os"
 
 	"github.com/go-sql-driver/mysql"
-	"github.com/trevorgrabham/webserver/webserver/lib/util"
+	"github.com/trevorgrabham/webserver/webserver/lib/dashboard"
+	"github.com/trevorgrabham/webserver/webserver/lib/tag"
+	tagpkg "github.com/trevorgrabham/webserver/webserver/lib/tag"
+	"github.com/trevorgrabham/webserver/webserver/lib/user"
 )
 
 const DEBUG = false
@@ -33,12 +36,12 @@ func init() {
 	}
 }
 
-func AddDay(activity util.ActivityMetaData) (id int64, err error) {
+func AddDay(activity dashboard.ActivityMetaData) (id int64, err error) {
 	if activity.Description == "" || activity.Duration < 0 || activity.Day == "" {
 		return -1, fmt.Errorf("AddDay(%v): Activities not initialized", activity)
 	}
 	// insert activity
-	res, err := DB.Exec("INSERT INTO timer_data (day, duration, description) VALUES (?, ?, ?)", activity.Day, activity.Duration, activity.Description)
+	res, err := DB.Exec("INSERT INTO timer_data (user_id, day, duration, description) VALUES (?, ?, ?, ?)", activity.UserID, activity.Day, activity.Duration, activity.Description)
 	if err != nil {
 		return -1, fmt.Errorf("AddDay(%v): %v", activity, err)
 	}
@@ -55,49 +58,50 @@ func AddDay(activity util.ActivityMetaData) (id int64, err error) {
 		if err != nil {
 			return id, fmt.Errorf("AddDay(%v): %v", activity, err)
 		}
-		tagId, err := res.LastInsertId()
+		tagID, err := res.LastInsertId()
 		if err != nil {
 			return id, fmt.Errorf("AddDay(%v): %v", activity, err)
 		}
-		activity.Tags[i].Id = tagId
+		activity.Tags[i].ID = tagID
 	}
 	return
 }
 
 // De-duplicates any identical tags on the same day, but not over different sessions
-func GetDayData(day string) (activities []util.ActivityMetaData, err error) {
+func GetDayData(userID int64, day string) (activities []dashboard.ActivityMetaData, err error) {
 	if day == "" {
 		return nil, fmt.Errorf("GetDayData(%s): Empty 'day'", day)
 	}
-	rows, err := DB.Query("SELECT timer_data.id AS id, duration, description, tag FROM timer_data JOIN activity_tag ON timer_data.id = activity_tag.activity_id WHERE day LIKE ?", day)
+	rows, err := DB.Query("SELECT timer_data.id AS id, duration, description, tag FROM timer_data JOIN activity_tag ON timer_data.id = activity_tag.activity_id WHERE day LIKE ? AND user_id = ?", day, userID)
 	if err != nil {
-		return nil, fmt.Errorf("GetDayData(%v): %v", day, err)
+		return nil, fmt.Errorf("GetDayData(%v, %v): %v", userID, day, err)
 	}
 	defer rows.Close()
 	var (
-		activityId, duration, previousId int64
+		activityID, duration, previousId int64
 		tag, description string
 	)
-	activities = make([]util.ActivityMetaData, 0)
+	activities = make([]dashboard.ActivityMetaData, 0)
 	for rows.Next() {
-		err = rows.Scan(&activityId, &duration, &description, &tag)
+		err = rows.Scan(&activityID, &duration, &description, &tag)
 		if err != nil {
 			return nil, err
 		}
 		/* 
 			We can have multiple tags per activityId, so we use previousId to see if this current row is refering to the same activityId as the previous row. If it is then we just need to grab the tag, otherwise we need to add a new activity
 		*/
-		if activityId != previousId {
+		if activityID != previousId {
 			if DEBUG {
-				fmt.Printf("New activity for %s\n", day)
+				fmt.Printf("New activity for user %d on %s\n", userID, day)
 			}
-			previousId = activityId
-			activities = append(activities, util.ActivityMetaData{
-				Id: activityId,
+			previousId = activityID
+			activities = append(activities, dashboard.ActivityMetaData{
+				ID: activityID,
+				UserID: userID,
 				Duration: duration,
 				Description: description,
 				Day: day,
-				Tags: []util.TagMetaData{{Id: -1, Tag: tag}}})
+				Tags: []tagpkg.TagMetaData{{ID: -1, Tag: tag}}})
 			continue
 		}
 		if activities[len(activities)-1].Tags.Contains(tag) {
@@ -109,7 +113,7 @@ func GetDayData(day string) (activities []util.ActivityMetaData, err error) {
 		if DEBUG {
 			fmt.Printf("Same activity for day %s, adding new tag %s\n", day, tag)
 		}
-		activities[len(activities)-1].Tags = append(activities[len(activities)-1].Tags, util.TagMetaData{Id: -1, Tag: tag, Count: 1})
+		activities[len(activities)-1].Tags = append(activities[len(activities)-1].Tags, tagpkg.TagMetaData{ID: -1, Tag: tag, Count: 1})
 	}
 	if rows.Err() != nil {
 		err = fmt.Errorf("GetDayData(%v): %v", day, rows.Err())
@@ -118,34 +122,30 @@ func GetDayData(day string) (activities []util.ActivityMetaData, err error) {
 }
 
 // De-duplicates any identical tags on the same day, over differing sessions
-func GetCardData(maxItems int64) (cards []util.CardMetaData, err error) {
-	if maxItems < 0 {
-		return nil, fmt.Errorf("GetCardData(%d): Bad value for 'maxItems'", maxItems)
-	}
+func GetCardData(userID int64, maxItems int64) (cards []dashboard.CardMetaData, err error) {
+	if maxItems < 0 { return nil, fmt.Errorf("GetCardData(%d, %d): Bad value for 'maxItems'", userID, maxItems) }
+	if userID < 1 { return nil, fmt.Errorf("GetCardData(%d, %d): Bad value for 'userID'", userID, maxItems) }
+
 	var rows *sql.Rows
 	if maxItems > 0 {
-		rows, err = DB.Query("SELECT DISTINCT day FROM timer_data ORDER BY day DESC LIMIT ?", maxItems)
+		rows, err = DB.Query("SELECT DISTINCT day FROM timer_data WHERE user_id = ? ORDER BY day DESC LIMIT ?", userID, maxItems)
 	} else {
-		rows, err = DB.Query("SELECT DISTINCT day FROM timer_data ORDER BY day DESC")
+		rows, err = DB.Query("SELECT DISTINCT day FROM timer_data WHERE user_id = ? ORDER BY day DESC", userID)
 	}
-	if err != nil {
-		return nil, fmt.Errorf("GetCardData(%d): %v", maxItems, err)
-	}
+	if err != nil { return nil, fmt.Errorf("GetCardData(%d): %v", maxItems, err) }
 	defer rows.Close()
 
 	var day string
-	cards = make([]util.CardMetaData, 0)
+	cards = make([]dashboard.CardMetaData, 0)
 	for rows.Next() {
 		err = rows.Scan(&day)
-		if err != nil {
-			return nil, fmt.Errorf("GetCardData(%d): %v", maxItems, err)
-		}
-		dayActivities, err := GetDayData(day)
-		if err != nil {
-			return nil, fmt.Errorf("GetCardData(%d): %v", maxItems, err)
-		}
+		if err != nil { return nil, fmt.Errorf("GetCardData(%d): %v", maxItems, err) }
+
+		dayActivities, err := GetDayData(userID, day)
+		if err != nil { return nil, fmt.Errorf("GetCardData(%d): %v", maxItems, err) }
+
 		var totalMins int64 
-		tags := make(util.Tags, 0)
+		tags := make(tag.Tags, 0)
 		for _, a := range dayActivities {
 			totalMins += a.Duration
 			// loop through so that we can de-duplicate any tags that are spread out over differing activities on the same day
@@ -155,20 +155,17 @@ func GetCardData(maxItems int64) (cards []util.CardMetaData, err error) {
 				}
 			}
 		}
-		cards = append(cards, util.CardMetaData{Activities: dayActivities, Tags: tags, TotalMins: totalMins, Day: day})
+		cards = append(cards, dashboard.CardMetaData{Activities: dayActivities, Tags: tags, TotalMins: totalMins, Day: day})
 	}
-	if rows.Err() != nil {
-		return nil, fmt.Errorf("GetCardData(%d): %v", maxItems, err)
-	}
+	if rows.Err() != nil { return nil, fmt.Errorf("GetCardData(%d, %d): %v", userID, maxItems, err) }
 	return
 }
 
-func GetTagData(offset int64) (tags util.TagSummaryData, err error) {
-	rows, err := DB.Query("SELECT tag, SUM(1) AS 'count' FROM activity_tag GROUP BY tag ORDER BY count DESC, tag LIMIT 10 OFFSET ?", offset)
-	if err != nil {
-		return util.TagSummaryData{}, fmt.Errorf("GetTagData(): %v", err) 
-	}
+func GetTagData(userID int64, offset int64) (tags tag.TagSummaryData, err error) {
+	rows, err := DB.Query("SELECT tag, SUM(1) AS 'count' FROM activity_tag WHERE activity_id IN (SELECT id from timer_data WHERE user_id = ?) GROUP BY tag ORDER BY count DESC, tag LIMIT 10 OFFSET ?", userID, offset)
+	if err != nil { return tag.TagSummaryData{}, fmt.Errorf("GetTagData(%v, %v): %v", userID, offset, err) }
 	defer rows.Close()
+
 	var (
 		tag string 
 		count int64
@@ -177,59 +174,79 @@ func GetTagData(offset int64) (tags util.TagSummaryData, err error) {
 	)
 	for rows.Next() {
 		err := rows.Scan(&tag, &count)
-		if err != nil {
-			return util.TagSummaryData{}, fmt.Errorf("GetTagData(): %v", err)
-		}
-		tags.Tags = append(tags.Tags, util.TagMetaData{Id: -1, Tag: tag, Count: count})
+		if err != nil { return tagpkg.TagSummaryData{}, fmt.Errorf("GetTagData(%d, %d): %v", userID, offset, err) }
+
+		tags.Tags = append(tags.Tags, tagpkg.TagMetaData{ID: -1, Tag: tag, Count: count})
 		totalNumTags += count
 		if count > maxCount {
 			maxCount = count
 		}
 	}
-	if rows.Err() != nil {
-		return util.TagSummaryData{}, fmt.Errorf("GetTagData(): %v", rows.Err())
-	}
+	if rows.Err() != nil { return tagpkg.TagSummaryData{}, fmt.Errorf("GetTagData(%d, %d): %v", userID, offset, rows.Err()) }
+
 	tags.TotalCount = totalNumTags
 	tags.MaxCount = maxCount
 	return
 }
 
-func GetPreviousTags() (tags []string, err error) {
-	rows, err := DB.Query("SELECT DISTINCT tag FROM activity_tag")
-	if err != nil {
-		return nil, fmt.Errorf("GetPreviousTags(): %v", err)
-	}
+func GetPreviousTags(userID int64) (tags []string, err error) {
+	rows, err := DB.Query("SELECT DISTINCT tag FROM activity_tag WHERE activity_id IN (SELECT id FROM timer_data WHERE user_id = ?)", userID)
+	if err != nil { return nil, fmt.Errorf("GetPreviousTags(%d): %v", userID, err) }
 	defer rows.Close()
+
 	var tag string 
 	for rows.Next() {
 		err := rows.Scan(&tag)
-		if err != nil {
-			return nil, fmt.Errorf("GetPreviousTags(): %v", err)
-		}
+		if err != nil { return nil, fmt.Errorf("GetPreviousTags(%d): %v", userID, err) }
 		tags = append(tags, tag)
 	}
-	if rows.Err() != nil {
-		return nil, fmt.Errorf("GetPreviousTags(): %v", rows.Err())
-	}
+	if rows.Err() != nil { return nil, fmt.Errorf("GetPreviousTags(%d): %v", userID, rows.Err()) }
 	return 
 }
 
-func GetPreviousActivities() (activites []string, err error) {
-	rows, err := DB.Query("SELECT DISTINCT description FROM timer_data")
-	if err != nil {
-		return nil, fmt.Errorf("GetPreviousActivities(): %v", err)
-	}
+func GetPreviousActivities(userID int64) (activites []string, err error) {
+	rows, err := DB.Query("SELECT DISTINCT description FROM timer_data WHERE user_id = ?", userID)
+	if err != nil { return nil, fmt.Errorf("GetPreviousActivities(%d): %v", userID, err) }
 	defer rows.Close()
+
 	var description string 
 	for rows.Next() {
 		err := rows.Scan(&description)
-		if err != nil {
-			return nil, fmt.Errorf("GetPreviousActivities(): %v", err)
-		}
+		if err != nil { return nil, fmt.Errorf("GetPreviousActivities(%d): %v", userID, err) }
 		activites = append(activites, description)
 	}
-	if rows.Err() !=  nil {
-		return nil, fmt.Errorf("GetPreviousActivities(): %v", rows.Err())
-	}
+	if rows.Err() !=  nil { return nil, fmt.Errorf("GetPreviousActivities(%d): %v", userID, rows.Err()) }
 	return
+}
+
+func AddClientID() (id int64, err error) {
+	var res sql.Result
+	res, err = DB.Exec(`INSERT INTO user (name, email) VALUES (NULL, NULL)`)
+	if err != nil { return -1, err }
+	id, err = res.LastInsertId()
+	return
+}
+
+func UpdateClient(details *user.UserDetails) error {
+	if details == nil { return fmt.Errorf("UpdateClient(%v): No 'details' provided", details) }
+	if details.ID < 1 { return fmt.Errorf("UpdateClient(%v): Bad value for 'ID'", details) }
+	var err error
+	switch {
+	case details.Name == "":
+		_, err = DB.Exec(`UPDATE user SET email = ? WHERE id = ?`, details.Email, details.ID)
+	case details.Email == "":
+		_, err = DB.Exec(`UPDATE user SET name = ? WHERE id = ?`, details.Name, details.ID)
+	default:
+		_, err = DB.Exec(`UPDATE user SET name = ?, email = ? WHERE id = ?`, details.Name, details.Email, details.ID)
+	}
+	if err != nil { return fmt.Errorf("UpdateClient(%v): %v", details, err) }
+	return nil
+}
+
+func LinkUsers(baseID int64, idToLink int64) error {
+	if baseID < 1 { return fmt.Errorf("LinkUsers(%d, %d): %d is a bad value for 'baseId'", baseID, idToLink, baseID) }
+	if idToLink < 1 { return fmt.Errorf("LinkUsers(%d, %d): %d is a bad value for 'idToLink'", baseID, idToLink, idToLink) }
+	_, err := DB.Exec(`UPDATE timer_data SET user_id = ? WHERE user_id = ?`, baseID, idToLink)
+	if err != nil { return fmt.Errorf("LinkUsers(%d, %d): %v", baseID, idToLink, err) }
+	return nil
 }
