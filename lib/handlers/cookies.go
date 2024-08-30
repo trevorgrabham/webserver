@@ -2,14 +2,17 @@ package handlers
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/trevorgrabham/webserver/webserver/lib/database"
 )
 
 func CheckIDCookie(w http.ResponseWriter, r *http.Request) (userID int64, err error) {
-	if cookie, e := r.Cookie("client-id"); e == http.ErrNoCookie {
+	cookie, err := r.Cookie("client-id")
+	if err == http.ErrNoCookie {
 		userID, err = database.AddClientID()
 		if err != nil { return -1, fmt.Errorf("CheckIDCookie(): %v", err) }
 		cookie = &http.Cookie{
@@ -17,16 +20,18 @@ func CheckIDCookie(w http.ResponseWriter, r *http.Request) (userID int64, err er
 			Value: fmt.Sprint(userID),
 			HttpOnly: true,
 			SameSite: http.SameSiteStrictMode,
+			Expires: time.Now().AddDate(10, 0, 0),					 	// 10 years from now. For most browsers, this will default to 400 days from now
+			MaxAge: math.MaxInt,														
 		}
-		http.SetCookie(w, cookie)
-		return userID, nil
-	} else if e != nil {
-		return -1, fmt.Errorf("CheckIDCookie(): %v", e)
 	} else {
 		userID, err = strconv.ParseInt(cookie.Value, 0, 64)
 		if err != nil { return -1, fmt.Errorf("CheckIDCookie(): %v", err) }
-		return  
+		// Update the expiry on the client's id cookie whenever they re-visit the site
+		cookie.Expires = time.Now().AddDate(10, 0, 0)
+		cookie.MaxAge = math.MaxInt
 	}
+	http.SetCookie(w, cookie)
+	return userID, nil
 }
 
 func LinkToAccount(accountUserID int64, w http.ResponseWriter, r *http.Request) error {
