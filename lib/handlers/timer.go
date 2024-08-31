@@ -18,25 +18,25 @@ import (
 const DEBUG = true
 
 func HandleRemove(w http.ResponseWriter, _ *http.Request) {
-	fmt.Fprintf(w, ``)
+	fmt.Fprint(w, ``)
 }
 
 func HandleStartTimer(w http.ResponseWriter, _ *http.Request) {
-	fmt.Fprintf(w, 
+	fmt.Fprint(w, 
 		timertemplate.PauseButton("pause-button", []string{"timer-button", "button-main"}, nil) + 
 		timertemplate.StopButton("stop-button", []string{"timer-button", "main-button"}, nil))
 }
 
 func HandlePauseTimer(w http.ResponseWriter, _ *http.Request) {
-	fmt.Fprintf(w, timertemplate.ResumeButton("resume-button", []string{"timer-button", "button-main"}, nil))
+	fmt.Fprint(w, timertemplate.ResumeButton("resume-button", []string{"timer-button", "button-main"}, nil))
 }
 
 func HandleResumeTimer(w http.ResponseWriter, _ *http.Request) {
-	fmt.Fprintf(w, timertemplate.PauseButton("pause-button", []string{"timer-button", "buton-main"}, nil))
+	fmt.Fprint(w, timertemplate.PauseButton("pause-button", []string{"timer-button", "buton-main"}, nil))
 }
 
 func HandleStopTimer(w http.ResponseWriter, _ *http.Request) {
-	fmt.Fprintf(w, timertemplate.Form())
+	fmt.Fprint(w, timertemplate.Form())
 }
 
 func HandleActivitySuggestions(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +77,7 @@ func HandleTagSuggestions(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleAddTag(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil { panic(fmt.Errorf("Parsing form: %v", err)) }
+	if err := r.ParseForm(); err != nil { panic(fmt.Errorf("parsing form: %v", err)) }
 
 	res, ok := r.Form["temporary-tag"]
 	if !ok || len(res) < 1 { panic(fmt.Errorf("'temporary-tag' was not a provided paramter")) }
@@ -206,5 +206,5 @@ func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
 }
 
 func resetTimer(w http.ResponseWriter) {
-	fmt.Fprintf(w, timertemplate.ResetButton("start-button", []string{"timer-button", "button-main"}, nil))
+	fmt.Fprint(w, timertemplate.ResetButton("start-button", []string{"timer-button", "button-main"}, nil))
 }

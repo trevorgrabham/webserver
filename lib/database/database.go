@@ -231,16 +231,39 @@ func UpdateClient(details *user.UserDetails) error {
 	if details == nil { return fmt.Errorf("UpdateClient(%v): No 'details' provided", details) }
 	if details.ID < 1 { return fmt.Errorf("UpdateClient(%v): Bad value for 'ID'", details) }
 	var err error
-	switch {
-	case details.Name == "":
-		_, err = DB.Exec(`UPDATE user SET email = ? WHERE id = ?`, details.Email, details.ID)
-	case details.Email == "":
+	if details.Name != "" {
 		_, err = DB.Exec(`UPDATE user SET name = ? WHERE id = ?`, details.Name, details.ID)
-	default:
-		_, err = DB.Exec(`UPDATE user SET name = ?, email = ? WHERE id = ?`, details.Name, details.Email, details.ID)
+	}
+	if err != nil { return fmt.Errorf("UpdateClient(%v): %v", details, err) }
+	if details.Email != "" {
+		_, err = DB.Exec(`UPDATE user SET email = ? WHERE id = ?`, details.Email, details.ID)
+	}
+	if err != nil { return fmt.Errorf("UpdateClient(%v): %v", details, err) }
+	if details.Ext != "" {
+		_, err = DB.Exec(`UPDATE user SET profile_pic_extension = ? WHERE id = ?`, details.Ext, details.ID)
 	}
 	if err != nil { return fmt.Errorf("UpdateClient(%v): %v", details, err) }
 	return nil
+}
+
+func GetClient(userID int64) (client *user.UserDetails, err error) {
+	if userID < 1 { return nil, fmt.Errorf("getClient(%d): bad value for 'userID'", userID) }
+
+	rows, err := DB.Query(`SELECT name, email, profile_pic_extension FROM user WHERE id = ?`, userID)
+	if err != nil { return nil, fmt.Errorf("getClient(%d): %v", userID, err) }
+	defer rows.Close()
+
+	var name, email, ext sql.NullString
+	for rows.Next() {
+		err := rows.Scan(&name, &email, &ext)
+		if err != nil { return nil, fmt.Errorf("getClient(%d): %v", userID, err) }
+	}
+	return &user.UserDetails{ 
+		ID: 	userID, 
+		Name: name.String, 
+		Email: email.String, 
+		Ext: ext.String,
+	}, nil
 }
 
 func LinkUsers(baseID int64, idToLink int64) error {

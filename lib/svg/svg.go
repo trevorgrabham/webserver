@@ -17,7 +17,6 @@ const (
 	Success
 	Cancel
 	Remove
-	Profile
 )
 
 var svgSource map[SVGType]string = map[SVGType]string{
@@ -28,7 +27,6 @@ var svgSource map[SVGType]string = map[SVGType]string{
 	Success: templates.SuccessSVG,
 	Cancel: templates.CancelSVG,
 	Remove: templates.RemoveSVG,
-	Profile: templates.ProfileSVG,
 }
 
 func SVG(id string, classes []string, htmx []string, svgType SVGType) string {
@@ -57,8 +55,6 @@ func SVG(id string, classes []string, htmx []string, svgType SVGType) string {
 		return fmt.Sprintf(svgSource[Cancel], idString, classString, htmxString)
 	case Remove:
 		return fmt.Sprintf(svgSource[Remove], idString, classString, htmxString)
-	case Profile:
-		return fmt.Sprintf(svgSource[Profile], idString, classString, htmxString)
 	default:
 		return ""
 	}

@@ -2,11 +2,11 @@
 
 - [x] Dashboard
 
-- [ ] Autocomplete suggestions for the activity and tags
+- [x] Autocomplete suggestions for the activity and tags
 
-- [ ] Nav bar
+- [x] Nav bar
 
-- [ ] Accounts
+- [x] Accounts
 
 - [x] Tag aggregate section
 
@@ -57,3 +57,5 @@
 - [ ] Deal with the empty space that is created when a use does not have any data yet to display. Careful to make sure that things are styled properly when new data is created for the user
 
 - [ ] Add a tag to the `.tag-summary-section` when we submit a new timer to the database
+
+- [ ] Fix the cacheing of the profile pic so that when a new profile pic with the same file extension is uploaded, it doesn't reuse the older cahced version
