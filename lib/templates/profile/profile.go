@@ -1,6 +1,10 @@
 package profile
 
-import "html/template"
+import (
+	"html/template"
+
+	"github.com/trevorgrabham/webserver/webserver/lib/profile"
+)
 
 var profileTemplate = `
 	<div id="profile-section">
@@ -16,4 +20,4 @@ var profileTemplate = `
 	</div>
 `
 
-var Profile = template.Must(template.New("profile-template").Funcs(template.FuncMap{"defaultPicNeeded": DefaultPicNeeded}).Parse(profileTemplate))
+var Profile = template.Must(template.New("profile-template").Funcs(template.FuncMap{"defaultPicNeeded": profile.GetProfilePic}).Parse(profileTemplate))

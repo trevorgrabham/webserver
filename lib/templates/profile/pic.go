@@ -1,18 +1,14 @@
 package profile
 
 import (
-	"fmt"
 	"html/template"
-)
 
-func DefaultPicNeeded(userID int64, ext string) string {
-	if ext == "" { return "default.jpg"}
-	return fmt.Sprintf("user-%d.%s", userID, ext)
-}
+	"github.com/trevorgrabham/webserver/webserver/lib/profile"
+)
 
 const showPicTemplate = `
 	<div id="profile-pic-img-container">
-		<img src="/imgs/{{defaultPicNeeded .ID .Ext}}" />
+		<img src="/imgs/{{defaultPicNeeded .ID}}" />
 	</div>
 	<div 
 		id="profile-edit-pic-button"
@@ -48,6 +44,6 @@ const editPicTemplate = `
 		{{end}}
 	</div>`
 
-var ShowPic = template.Must(template.New("show-pic-template").Funcs(template.FuncMap{"defaultPicNeeded": DefaultPicNeeded}).Parse(showPicTemplate)) 
+var ShowPic = template.Must(template.New("show-pic-template").Funcs(template.FuncMap{"defaultPicNeeded": profile.GetProfilePic}).Parse(showPicTemplate)) 
 
 var EditPic = template.Must(template.New("show-pic-template").Parse(editPicTemplate))

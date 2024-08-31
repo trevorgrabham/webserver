@@ -3,7 +3,7 @@ package nav
 import (
 	"html/template"
 
-	profiletemplate "github.com/trevorgrabham/webserver/webserver/lib/templates/profile"
+	"github.com/trevorgrabham/webserver/webserver/lib/profile"
 )
 
 const navTemplate = `
@@ -13,8 +13,8 @@ const navTemplate = `
       hx-get="/profile"
       hx-target="body"
     >
-      <img src="/imgs/{{defaultPicNeeded .ID .Ext}}" />
+      <img src="/imgs/{{defaultPicNeeded .ID}}" />
     </li>
   </ul>`
 
-var Nav = template.Must(template.New("nav-template").Funcs(template.FuncMap{"defaultPicNeeded": profiletemplate.DefaultPicNeeded}).Parse(navTemplate))
+var Nav = template.Must(template.New("nav-template").Funcs(template.FuncMap{"defaultPicNeeded": profile.GetProfilePic}).Parse(navTemplate))
