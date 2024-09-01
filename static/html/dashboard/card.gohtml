@@ -1,0 +1,22 @@
+{{define "card"}}
+	<div id="date-{{.Day}}" class="card-container" {{.SwapOOB}}>
+		<div class="card-header">
+			<h2 class="card-date">{{.Day}}</h2>
+			<h2 class="card-total-hours">{{formatTotalMin .TotalMins}}</h2>
+		</div>
+		<div class="card-data-container">
+			<div class="activities-container">
+				{{range .Activities}}
+					<div class="duration-bar" style="--default-flex: {{.Duration}};">
+						<div class="bar-text">{{.Description}}</div>
+					</div>
+				{{end}}
+			</div>
+			<div class="tags-container">
+				{{range .Tags}}
+				<div id="tag-{{.ID}}" class="tag">{{.Tag}}</div>
+				{{end}}
+			</div>
+		</div>
+	</div>
+{{end}}

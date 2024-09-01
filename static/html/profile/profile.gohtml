@@ -1,0 +1,13 @@
+{{define "profile"}}
+	<div id="profile-section">
+		<div id="profile-pic-container">
+      {{template "showpic" .}}
+	  </div>
+		<div id="profile-details-container">
+      {{template "showname" .}}
+	  </div>
+		<div id="profile-details-container">
+      {{template "showemail" .}}
+	  </div>
+	</div>
+{{end}}

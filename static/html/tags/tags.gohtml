@@ -1,0 +1,9 @@
+{{define "tags"}}
+	{{range .}}
+		{{template "tag" .}}
+	{{end}}
+
+	{{if lt (len .) 10}}
+		{{template "disabledmoretagsbutton"}}
+	{{end}}
+{{end}}

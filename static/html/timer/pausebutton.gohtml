@@ -1,0 +1,11 @@
+{{define "pausebutton"}}
+<button
+	class="svg-wrapper"
+	_="on click send stopTimer to #timer-display" 
+	hx-get="/pauseTimer" 
+	hx-target="this"
+	hx-swap="outerHTML"
+>
+	{{template "pausesvg" .}}
+</button>
+{{end}}

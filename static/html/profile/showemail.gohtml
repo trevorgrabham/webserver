@@ -1,0 +1,19 @@
+{{define "showemail"}}
+	<div id="profile-email-row" class="profile-input-row">
+		<input 
+			id="profile-email-input"
+			name="email"
+			type="text"
+			readonly="true"
+			value="{{.Email}}"
+		/>
+		<div 
+			id="profile-edit-email-button"
+			class="profile-edit-button"
+			hx-get="/profile/editEmail"
+			hx-target="#profile-email-row"
+		>
+			Edit
+		</div>
+	</div>
+{{end}}

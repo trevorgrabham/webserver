@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
 
 	"github.com/trevorgrabham/webserver/webserver/lib/database"
-	tagtemplates "github.com/trevorgrabham/webserver/webserver/lib/templates/tags"
+	"github.com/trevorgrabham/webserver/webserver/lib/templateutil"
 )
 
 func HandleTagSummary(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +34,9 @@ func HandleTagSummary(w http.ResponseWriter, r *http.Request) {
 	switch r.Header.Get("Hx-Trigger") {
 	// Coming from '/'
 	case "tag-summary-section":
-		if err := tagtemplates.AllTagSummaryTemplateReady.Execute(w, tags); err != nil { panic(fmt.Errorf("executing TagSummaryTemplate: %v", err)) }
+		tagsContainer := template.Must(template.New("tagscontainer").Funcs(templateutil.TagFuncMap()).ParseFiles(templateutil.ParseFiles["tagscontainer"]...))
+		err = tagsContainer.Execute(w, tags)
+		if err != nil { panic(fmt.Errorf("executing TagSummaryTemplate: %v", err)) }
 	// Coming from the 'load more' button
 	case "load-tag-summary-button":
 		var max int64
@@ -44,10 +47,8 @@ func HandleTagSummary(w http.ResponseWriter, r *http.Request) {
 		if err != nil { panic(fmt.Errorf("HandleTagSummary(): %v", err)) }
 
 		tags.MaxCount = max
-		if err := tagtemplates.TagSummaryTemplateReady.Execute(w, tags); err != nil { panic(fmt.Errorf("executing TagSummaryTemplate: %v", err)) }
-	}
-
-	if len(tags.Tags) < 10 {
-		fmt.Fprint(w, tagtemplates.DisabledMoreTagsButton)
+		tagsTemplate := template.Must(template.New("tags").Funcs(templateutil.TagFuncMap()).ParseFiles(templateutil.ParseFiles["tags"]...))
+		err = tagsTemplate.Execute(w, tags)
+		if err != nil { panic(fmt.Errorf("executing TagSummaryTemplate: %v", err)) }
 	}
 }

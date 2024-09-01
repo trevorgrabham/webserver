@@ -1,0 +1,13 @@
+{{define "tag"}}
+	<div class="tag-summary-row">
+		<div 
+			class="tag-summary-tag-title"
+		>{{.Tag}}</div>
+		<div 
+			class="tag-summary-bar" 
+			style="--default-width: {{normalizeCount .Count .MaxCount}}" 
+		>
+			{{.Count}}
+		</div>
+	</div>
+{{end}}

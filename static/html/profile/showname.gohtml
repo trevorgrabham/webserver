@@ -1,0 +1,19 @@
+{{define "showname"}}
+	<div id="profile-name-row" class="profile-input-row">
+		<input 
+			id="profile-name-input"
+			name="name"
+			type="text"
+			readonly="true"
+			value="{{.Name}}"
+		/>
+		<div 
+			id="profile-edit-name-button"
+			class="profile-edit-button"
+			hx-get="/profile/editName"
+			hx-target="#profile-name-row"
+		>
+			Edit
+		</div>
+	</div>
+{{end}}

@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
 
 	"github.com/trevorgrabham/webserver/webserver/lib/database"
-	dashboardtemplates "github.com/trevorgrabham/webserver/webserver/lib/templates/dashboard"
+	"github.com/trevorgrabham/webserver/webserver/lib/templateutil"
 )
 
 func HandleDashboard(w http.ResponseWriter, r *http.Request) {
@@ -27,5 +28,7 @@ func HandleDashboard(w http.ResponseWriter, r *http.Request) {
 	cards, err := database.GetCardData(id, maxItems)
 	if err != nil { panic(err) }
 
-	if err := dashboardtemplates.AllCardsTemplateReady.Execute(w, cards); err != nil { panic(fmt.Errorf("executing template: %v", err)) }
+	allCards := template.Must(template.New("cards").Funcs(templateutil.DashboardFuncMap()).ParseFiles(templateutil.ParseFiles["cards"]...))
+	err = allCards.Execute(w, cards)
+	if err != nil { panic(fmt.Errorf("executing template: %v", err)) }
 }	

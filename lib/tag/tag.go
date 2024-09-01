@@ -1,9 +1,10 @@
 package tag
 
 type TagMetaData struct {
-	ID    int64
-	Tag   string
-	Count int64
+	ID       int64
+	Tag      string
+	Count    int64
+	MaxCount int64
 }
 
 type Tags []TagMetaData

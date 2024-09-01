@@ -183,6 +183,10 @@ func GetTagData(userID int64, offset int64) (tags tag.TagSummaryData, err error)
 		}
 	}
 	if rows.Err() != nil { return tagpkg.TagSummaryData{}, fmt.Errorf("GetTagData(%d, %d): %v", userID, offset, rows.Err()) }
+	
+	for i := range tags.Tags {
+		tags.Tags[i].MaxCount = maxCount
+	}
 
 	tags.TotalCount = totalNumTags
 	tags.MaxCount = maxCount

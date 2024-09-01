@@ -1,10 +1,11 @@
 package handlers
 
 import (
+	"html/template"
 	"net/http"
 
 	"github.com/trevorgrabham/webserver/webserver/lib/database"
-	navtemplate "github.com/trevorgrabham/webserver/webserver/lib/templates/nav"
+	"github.com/trevorgrabham/webserver/webserver/lib/templateutil"
 )
 
 func HandleNav(w http.ResponseWriter, r *http.Request) {
@@ -12,5 +13,6 @@ func HandleNav(w http.ResponseWriter, r *http.Request) {
 	if err != nil { http.Error(w, err.Error(), http.StatusBadRequest); return }
 	client, err := database.GetClient(userID)
 	if err != nil { http.Error(w, err.Error(), http.StatusBadRequest); return }
-	navtemplate.Nav.Execute(w, client)
+	nav := template.Must(template.New("nav").Funcs(templateutil.NavFuncMap()).ParseFiles(templateutil.ParseFiles["nav"]...))
+	nav.Execute(w, client)
 }

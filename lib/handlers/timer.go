@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"slices"
 	"strings"
@@ -10,8 +11,7 @@ import (
 	"github.com/trevorgrabham/webserver/webserver/lib/dashboard"
 	"github.com/trevorgrabham/webserver/webserver/lib/database"
 	tagpkg "github.com/trevorgrabham/webserver/webserver/lib/tag"
-	dashboardtemplate "github.com/trevorgrabham/webserver/webserver/lib/templates/dashboard"
-	timertemplate "github.com/trevorgrabham/webserver/webserver/lib/templates/timer"
+	"github.com/trevorgrabham/webserver/webserver/lib/templateutil"
 	"github.com/trevorgrabham/webserver/webserver/lib/timer"
 )
 
@@ -22,21 +22,36 @@ func HandleRemove(w http.ResponseWriter, _ *http.Request) {
 }
 
 func HandleStartTimer(w http.ResponseWriter, _ *http.Request) {
-	fmt.Fprint(w, 
-		timertemplate.PauseButton("pause-button", []string{"timer-button", "button-main"}, nil) + 
-		timertemplate.StopButton("stop-button", []string{"timer-button", "main-button"}, nil))
+	pauseButton := template.Must(template.New("pausebutton").ParseFiles(templateutil.ParseFiles["pausebutton"]...))
+	stopButton := template.Must(template.New("stopbutton").ParseFiles(templateutil.ParseFiles["stopbutton"]...))
+
+	err := pauseButton.Execute(w, templateutil.NewElementInfo("pause-button", []string{"timer-button", "button-main"}, nil, ""))
+	if err != nil { panic(err) }
+
+	err = stopButton.Execute(w, templateutil.NewElementInfo("stop-button", []string{"timer-button", "button-main"}, nil, ""))
+	if err != nil { panic(err) }
 }
 
 func HandlePauseTimer(w http.ResponseWriter, _ *http.Request) {
-	fmt.Fprint(w, timertemplate.ResumeButton("resume-button", []string{"timer-button", "button-main"}, nil))
+	startButton := template.Must(template.New("startbutton").ParseFiles(templateutil.ParseFiles["startbutton"]...))
+	err := startButton.Execute(w, templateutil.NewElementInfo("resume-button", []string{"timer-button", "button-main"}, nil, ""))
+	if err != nil { panic(err) }
 }
 
 func HandleResumeTimer(w http.ResponseWriter, _ *http.Request) {
-	fmt.Fprint(w, timertemplate.PauseButton("pause-button", []string{"timer-button", "buton-main"}, nil))
+	pausebutton := template.Must(template.New("pausebutton").ParseFiles(templateutil.ParseFiles["pausebutton"]...))
+	err := pausebutton.Execute(w, templateutil.NewElementInfo("pause-button", []string{"timer-button", "button-main"}, nil, ""))
+	if err != nil { panic(err) }
 }
 
 func HandleStopTimer(w http.ResponseWriter, _ *http.Request) {
-	fmt.Fprint(w, timertemplate.Form())
+	form := template.Must(template.New("form").ParseFiles(templateutil.ParseFiles["form"]...))
+	data := templateutil.NewFormData(
+		templateutil.NewElementInfo("add-tag-svg", []string{"timer-button", "button-sub-form"}, nil, ""),
+		templateutil.NewElementInfo("", []string{"timer-button", "button-form"}, nil, ""),
+		templateutil.NewElementInfo("reset-button", []string{"timer-button", "button-form"}, nil, ""))
+	err := form.Execute(w, data)
+	if err != nil { panic(err) }
 }
 
 func HandleActivitySuggestions(w http.ResponseWriter, r *http.Request) {
@@ -46,10 +61,7 @@ func HandleActivitySuggestions(w http.ResponseWriter, r *http.Request) {
 	if err != nil { panic(err) }
 
 	res, ok := r.Form["activity"]
-	if !ok || len(res[0]) < 1 {
-		fmt.Fprint(w)
-		return
-	}
+	if !ok || len(res[0]) < 1 { fmt.Fprint(w); return }
 	activityPartial := res[0]
 
 	if DEBUG {
@@ -60,16 +72,15 @@ func HandleActivitySuggestions(w http.ResponseWriter, r *http.Request) {
 	if err != nil { panic(err) }
 
 	matches := timer.FilterFromPartialString(activityPartial, previousActivities)
-	if matches.Length == 0 {
-		fmt.Fprint(w)
-		return
-	}
+	if matches.Length == 0 { fmt.Fprint(w); return }
 
 	if DEBUG {
 		fmt.Printf("Found matches %v\n", matches)
 	}
 
-	if err := timertemplate.AutocompleteTemplateReady("activity-suggestions").Execute(w, matches); err != nil { panic(fmt.Errorf("HandleActivitySuggestions(): %v", err)) }
+	autocomplete := template.Must(template.New("autocomplete").Funcs(templateutil.AutocompleteFuncMap()).ParseFiles(templateutil.ParseFiles["autocomplete"]...))
+	err = autocomplete.Execute(w, templateutil.NewAutocompleteData("activity-suggestions", matches))
+	if err != nil { panic(fmt.Errorf("HandleActivitySuggestions(): %v", err)) }
 }
 
 func HandleTagSuggestions(w http.ResponseWriter, r *http.Request) {
@@ -84,13 +95,16 @@ func HandleAddTag(w http.ResponseWriter, r *http.Request) {
 
 	tag := res[0]
 
-	if len(tag) <= 0 {
-		fmt.Fprint(w)
-		return
-	}
+	if len(tag) <= 0 { fmt.Fprint(w); return }
 
-	fmt.Fprint(w, 
-		timertemplate.NewTagTemplate(tag, utf8.RuneCountInString(tag), "tag-input", []string{"timer-form-input"}, []string{`hx-swap-oob="true"`})) 
+	newTag := template.Must(template.New("newtag").ParseFiles(templateutil.ParseFiles["newtag"]...))
+	err := newTag.Execute(w, templateutil.NewTagData(
+		templateutil.NewElementInfo("tag-input", []string{"timer-form-input"}, []string{`hx-swap-oob="true"`}, ""),
+		templateutil.NewElementInfo("", []string{"button-tag-remove"}, []string{`hx-get="/removeTag"`, `hx-target="closest .tag-container"`, `hx-swap="outerHTML"`}, ""),
+		tag,
+		utf8.RuneCountInString(tag),
+	))
+	if err != nil { panic(err) }
 }
 
 func HandleResetTimer(w http.ResponseWriter, _ *http.Request) {
@@ -197,14 +211,19 @@ func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
 		Tags:	t,
 		TotalMins: totalMins,
 		Day: timer.Day,
+		SwapOOB: template.HTMLAttr(`hx-swap-oob="true"`),
 	}
 
 	// generate the template and respond with it
-	if err := dashboardtemplate.SingleCardTemplateReady.Execute(w, card); err != nil { panic(fmt.Errorf("executing template: %v", err)) }
+	cardTemplate := template.Must(template.New("card").Funcs(templateutil.DashboardFuncMap()).ParseFiles(templateutil.ParseFiles["card"]...))
+	err = cardTemplate.Execute(w, card)
+	if err != nil { panic(fmt.Errorf("executing template: %v", err)) }
 
 	resetTimer(w)
 }
 
 func resetTimer(w http.ResponseWriter) {
-	fmt.Fprint(w, timertemplate.ResetButton("start-button", []string{"timer-button", "button-main"}, nil))
+	defaultTimer := template.Must(template.New("defaulttimer").ParseFiles(templateutil.ParseFiles["defaulttimer"]...))
+	err := defaultTimer.Execute(w, templateutil.NewElementInfo("start-button", []string{"timer-button", "button-main"}, nil, ""))
+	if err != nil { panic(err) }
 }

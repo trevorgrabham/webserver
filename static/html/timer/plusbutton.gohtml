@@ -1,0 +1,13 @@
+{{define "plusbutton"}}
+<button
+  id="add-tag-button"
+  class="svg-wrapper"
+  hx-post="/addTag"
+  hx-include="#tag-input"
+  hx-params="temporary-tag"
+  hx-target="#tags-container"
+  hx-swap="beforeend"
+>
+  {{template "plussvg" .}}
+</button>
+{{end}}

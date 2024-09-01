@@ -1,0 +1,10 @@
+{{define "cancelbutton"}}
+<button
+  class="svg-wrapper"
+  _="on click call resetTimer()"
+  hx-get="/resetTimer"
+  hx-target="#timer-container"
+>
+  {{template "cancelsvg" .}}
+</button>
+{{end}}

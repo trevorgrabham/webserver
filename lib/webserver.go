@@ -21,6 +21,7 @@ func StartServer() {
 	http.HandleFunc("/nav", handlers.HandleNav)
 	// Timer
 	http.Handle("/", StaticHandler(http.Handler(http.FileServer(http.Dir("./static")))))
+	http.HandleFunc("/defaultTimer", handlers.HandleResetTimer)
 	http.HandleFunc("/startTimer", handlers.HandleStartTimer)
 	http.HandleFunc("/pauseTimer", handlers.HandlePauseTimer)
 	http.HandleFunc("/resumeTimer", handlers.HandleResumeTimer)

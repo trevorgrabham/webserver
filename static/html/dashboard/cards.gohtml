@@ -1,0 +1,9 @@
+{{define "cards"}}
+	<section id="dashboard-section" class="section-container">
+  {{range .}}
+    {{if gt .TotalMins 0}}
+      {{template "card" .}}
+    {{end}}
+  {{end}}
+  </section>
+{{end}}

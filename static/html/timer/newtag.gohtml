@@ -1,0 +1,19 @@
+{{define "newtag"}}
+<input type="text"
+	{{.Input.ID}}
+	{{.Input.Classes}}
+	{{.Input.Htmx}}
+	{{.Input.Hyperscript}}
+	name="temporary-tag" 
+	placeholder="tags" 
+	maxlength="255"
+	hx-swap-oob="true"
+/>
+
+<div class="tag-container">
+	<div class="tag-wrapper">
+		<input type="text" class="tag-display" name="tag" value="{{.Value}}" readonly style="width: {{.Width}}ch"/>
+		{{template "removesvg" .SVG}}
+	</div>
+</div>
+{{end}}

@@ -1,0 +1,10 @@
+{{define "startbutton"}}
+<button
+  class="svg-wrapper"
+  _="on click send startTimer to #timer-display"
+  hx-get="/startTimer"
+  hx-target="#timer-buttons-container"
+>
+	{{template "startsvg" .}}
+</button>
+{{end}}

@@ -1,6 +1,10 @@
 package dashboard
 
-import "github.com/trevorgrabham/webserver/webserver/lib/tag"
+import (
+	"html/template"
+
+	"github.com/trevorgrabham/webserver/webserver/lib/tag"
+)
 
 type ActivityMetaData struct {
 	ID          int64
@@ -16,4 +20,5 @@ type CardMetaData struct {
 	tag.Tags
 	TotalMins int64
 	Day       string
+	SwapOOB 	template.HTMLAttr
 }

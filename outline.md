@@ -58,4 +58,8 @@
 
 - [ ] Add a tag to the `.tag-summary-section` when we submit a new timer to the database
 
-- [ ] Fix the cacheing of the profile pic so that when a new profile pic with the same file extension is uploaded, it doesn't reuse the older cahced version
+- [x] Fix the cacheing of the profile pic so that when a new profile pic with the same file extension is uploaded, it doesn't reuse the older cahced version
+
+- [ ] Add the profile page to the browser history, and make it it's own HTML page
+
+- [ ] Figure out why the timer isn't working if i go for a second time

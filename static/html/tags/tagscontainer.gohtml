@@ -1,0 +1,23 @@
+{{define "tagscontainer"}}
+  <section id="tag-summary-section" class="section-container">
+	  <div id="tag-summary-container">
+		  <div id="tag-summary-data-container">
+				  {{template "tags" .Tags}}
+		  </div>
+			{{if gt (len .Tags) 9}}
+		  	<div 
+			  	id="load-tag-summary-button"
+			  	_="on click
+					  	get @data-offset as Int + 10
+					  	set @data-offset to it"
+			  	hx-get="/tagSummary"
+			  	hx-target="#tag-summary-data-container"
+			  	hx-swap="beforeend"
+			  	hx-vals='js:{offset: event.target.getAttribute("data-offset"), max: event.target.getAttribute("data-max-count")}'
+			  	data-offset="11"
+			  	data-max-count="{{$.MaxCount}}"
+		  	>Load More<div>
+			{{end}}
+	  </div>
+  </section>
+{{end}}
