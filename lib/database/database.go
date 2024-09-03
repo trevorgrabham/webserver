@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/trevorgrabham/webserver/webserver/lib/chart"
 	"github.com/trevorgrabham/webserver/webserver/lib/dashboard"
 	"github.com/trevorgrabham/webserver/webserver/lib/profile"
 	"github.com/trevorgrabham/webserver/webserver/lib/tag"
@@ -271,4 +273,47 @@ func LinkUsers(baseID int64, idToLink int64) error {
 	_, err := DB.Exec(`UPDATE timer_data SET user_id = ? WHERE user_id = ?`, baseID, idToLink)
 	if err != nil { return fmt.Errorf("LinkUsers(%d, %d): %v", baseID, idToLink, err) }
 	return nil
+}
+
+func GetStartEndData(userID int64) (start, end *time.Time, err error) {
+		row, err := DB.Query(`SELECT MIN(day) AS start, MAX(day) AS end FROM timer_data WHERE user_id = ?`, userID)
+		if err != nil { return nil, nil, fmt.Errorf("GetStartEndData(%d): %v", userID, err) }
+
+		var s, e string
+		for row.Next() {
+			err := row.Scan(&s, &e)
+			if err != nil { return nil, nil, fmt.Errorf("GetStartEndData(%d): %v", userID, err) }
+		}
+		if row.Err() != nil { return nil, nil, fmt.Errorf("GetStartEndData(%d): %v", userID, err) }
+
+		{
+			t, err := time.Parse(chart.DateMask, s)
+			if err != nil { return nil, nil, fmt.Errorf("GetStartEndData(%d): %v", userID, err) }
+			start = &t
+		}
+		{
+			t, err := time.Parse(chart.DateMask, e)
+			if err != nil { return nil, nil, fmt.Errorf("GetStartEndData(%d): %v", userID, err) }
+			end = &t
+		}
+		
+		return
+}
+
+func GetChartData(userID int64, start, end *time.Time) (res []chart.Data, err error) {
+	if start == nil || end == nil { return nil, fmt.Errorf("GetChartData(%d, %s, %s): Cannot use Nil value for 'start' or 'end'") }
+
+	rows, err := DB.Query(`SELECT day, duration FROM timer_data WHERE user_id = ? AND day >= ? AND day <= ?`, userID, start.Format(chart.DateMask), end.Format(chart.DateMask))
+	if err != nil { return nil, fmt.Errorf("GetChartData(%d, %s, %s): %v", userID, start.Format(chart.DateMask), end.Format(chart.DateMask), err) }
+
+	var (
+		day string
+		duration int64
+	)
+	for rows.Next() {
+		if err := rows.Scan(&day, &duration); err != nil { return nil, fmt.Errorf("GetChartData(%d, %s, %s): %v", userID, start.Format(chart.DateMask), end.Format(chart.DateMask), err) }
+		res = append(res, chart.Data{ Duration: float64(duration)/60.0, Day: day })
+	}
+	if rows.Err() != nil { return nil, fmt.Errorf("GetChartData(%d, %s, %s): %v", userID, start.Format(chart.DateMask), end.Format(chart.DateMask), rows.Err()) }
+	return
 }

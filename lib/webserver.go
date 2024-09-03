@@ -44,6 +44,8 @@ func StartServer() {
 	http.HandleFunc("/profile/saveName", handlers.HandleSaveName)
 	http.HandleFunc("/profile/editEmail", handlers.HandleEditEmail)
 	http.HandleFunc("/profile/saveEmail", handlers.HandleSaveEmail)
+	// Chart
+	http.HandleFunc("/chart", handlers.HandleChart)
 
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }
