@@ -63,3 +63,9 @@
 - [ ] Add the profile page to the browser history, and make it it's own HTML page
 
 - [ ] Figure out why the timer isn't working if i go for a second time
+
+- [ ] Add a confirm to cancel pop up, when the timer is running, and when they want to cancel at the `timer-form`
+
+- [ ] Set up the browser history when moving to the profile page, or the stats page
+
+- [ ] Set up the link account form, and make sure that when users to try change their email address, that it doesn't already exist in the database. We will need to be able to send back error messages in this case, and we can prompt the user to link it to their account

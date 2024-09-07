@@ -57,8 +57,8 @@ func HandleStopTimer(w http.ResponseWriter, _ *http.Request) {
 func HandleActivitySuggestions(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil { panic(fmt.Errorf("HandleActivitySuggestions(): parsing form : %v", err)) }
 
-	userID, err := CheckIDCookie(w, r)
-	if err != nil { panic(err) }
+	userID, ok := r.Context().Value(ContextKey("user-id")).(int64)
+	if ! ok { panic(fmt.Errorf("unable to parse 'user-id' from handleactivitysuggestions()")) }
 
 	res, ok := r.Form["activity"]
 	if !ok || len(res[0]) < 1 { fmt.Fprint(w); return }
@@ -118,8 +118,8 @@ func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(r.Form)
 	}
 
-	userID, err := CheckIDCookie(w, r)
-	if err != nil { panic(err) }
+	userID, ok := r.Context().Value(ContextKey("user-id")).(int64)
+	if ! ok { panic(fmt.Errorf("unable to parse 'user-id' from handleactivitysuggestions()")) }
 
 	// check that all required fields are present
 	var activityDuration, activityDesc string

@@ -225,7 +225,7 @@ func GetPreviousActivities(userID int64) (activites []string, err error) {
 	return
 }
 
-func AddClientID() (id int64, err error) {
+func AddUserID() (id int64, err error) {
 	var res sql.Result
 	res, err = DB.Exec(`INSERT INTO user (name, email) VALUES (NULL, NULL)`)
 	if err != nil { return -1, err }
@@ -233,32 +233,32 @@ func AddClientID() (id int64, err error) {
 	return
 }
 
-func UpdateClient(details *profile.UserDetails) error {
-	if details == nil { return fmt.Errorf("UpdateClient(%v): No 'details' provided", details) }
-	if details.ID < 1 { return fmt.Errorf("UpdateClient(%v): Bad value for 'ID'", details) }
+func UpdateUser(details *profile.UserDetails) error {
+	if details == nil { return fmt.Errorf("UpdatetUser(%v): No 'details' provided", details) }
+	if details.ID < 1 { return fmt.Errorf("UpdateUser(%v): Bad value for 'ID'", details) }
 	var err error
 	if details.Name != "" {
 		_, err = DB.Exec(`UPDATE user SET name = ? WHERE id = ?`, details.Name, details.ID)
 	}
-	if err != nil { return fmt.Errorf("UpdateClient(%v): %v", details, err) }
+	if err != nil { return fmt.Errorf("UpdateUser(%v): %v", details, err) }
 	if details.Email != "" {
 		_, err = DB.Exec(`UPDATE user SET email = ? WHERE id = ?`, details.Email, details.ID)
 	}
-	if err != nil { return fmt.Errorf("UpdateClient(%v): %v", details, err) }
+	if err != nil { return fmt.Errorf("UpdateUser(%v): %v", details, err) }
 	return nil
 }
 
-func GetClient(userID int64) (client *profile.UserDetails, err error) {
-	if userID < 1 { return nil, fmt.Errorf("getClient(%d): bad value for 'userID'", userID) }
+func GetUser(userID int64) (user *profile.UserDetails, err error) {
+	if userID < 1 { return nil, fmt.Errorf("getUser(%d): bad value for 'userID'", userID) }
 
 	rows, err := DB.Query(`SELECT name, email FROM user WHERE id = ?`, userID)
-	if err != nil { return nil, fmt.Errorf("getClient(%d): %v", userID, err) }
+	if err != nil { return nil, fmt.Errorf("getUser(%d): %v", userID, err) }
 	defer rows.Close()
 
 	var name, email sql.NullString
 	for rows.Next() {
 		err := rows.Scan(&name, &email)
-		if err != nil { return nil, fmt.Errorf("getClient(%d): %v", userID, err) }
+		if err != nil { return nil, fmt.Errorf("getUser(%d): %v", userID, err) }
 	}
 	return &profile.UserDetails{ 
 		ID: 	userID, 

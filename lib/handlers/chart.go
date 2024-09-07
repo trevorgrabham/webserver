@@ -15,8 +15,8 @@ const (
 )
 
 func HandleChart(w http.ResponseWriter, r *http.Request) {
-	userID, err := CheckIDCookie(w, r)
-	if err != nil { http.Error(w, fmt.Sprintf("getting 'client-id' cookie: %v", err.Error()), http.StatusBadRequest); return }
+	userID, ok := r.Context().Value(ContextKey("user-id")).(int64)
+	if !ok { panic(fmt.Errorf("unable to parse 'user-id' in handlechart()")) }
 
 	params := r.URL.Query()
 	var start, end *time.Time

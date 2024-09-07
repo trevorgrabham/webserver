@@ -14,8 +14,8 @@ func HandleDashboard(w http.ResponseWriter, r *http.Request) {
 	// Parse out maxItems parameter
 	if err := r.ParseForm(); err != nil { panic(fmt.Errorf("parsing form: %v", err)) }
 
-	id, err := CheckIDCookie(w, r)
-	if err != nil { panic(err) }
+	userID, ok := r.Context().Value(ContextKey("user-id")).(int64)
+	if !ok { panic(fmt.Errorf("unable to parse 'user-id' from handledashboard()")) }
 	
 	res, ok := r.Form["maxItems"]
 	var maxItems int64
@@ -25,7 +25,7 @@ func HandleDashboard(w http.ResponseWriter, r *http.Request) {
 		if err != nil { panic(fmt.Errorf("parsing maxItems (%s): %v", res[0], err)) }
 	}
 
-	cards, err := database.GetCardData(id, maxItems)
+	cards, err := database.GetCardData(userID, maxItems)
 	if err != nil { panic(err) }
 
 	allCards := template.Must(template.New("cards").Funcs(templateutil.DashboardFuncMap()).ParseFiles(templateutil.ParseFiles["cards"]...))

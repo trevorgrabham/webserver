@@ -62,7 +62,7 @@ func GetProfilePic(userID int64) (path string) {
 	return fmt.Sprintf(`%d/%s`, userID, files[0].Name())
 }
 
-// Calling function should check if err == ErrFileTooLarge || ErrUnsupportedFileFormat (under the profile package) so that they can alert the client in these cases
+// Calling function should check if err == ErrFileTooLarge || ErrUnsupportedFileFormat (under the profile package) so that they can alert the user in these cases
 func AddProfilePic(user *UserDetails, r *http.Request) error {
 	if user == nil { return fmt.Errorf("AddProfilePic(%v): No user provided", user)}
 	

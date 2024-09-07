@@ -14,8 +14,8 @@ func HandleTagSummary(w http.ResponseWriter, r *http.Request) {
 	// Parse out the offset value
 	if err := r.ParseForm(); err != nil { panic(fmt.Errorf("HandleTagSummary(): %v", err)) }
 
-	userID, err := CheckIDCookie(w, r)
-	if err != nil { panic(fmt.Errorf("HandleTagSummary(): %v", err))}
+	userID, ok := r.Context().Value(ContextKey("user-id")).(int64)
+	if !ok { panic(fmt.Errorf("unable to parse 'user-id' from handletagsummary()")) }
 
 	res, ok := r.Form["offset"]
 	var offset int64

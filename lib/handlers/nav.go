@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 
@@ -9,10 +10,10 @@ import (
 )
 
 func HandleNav(w http.ResponseWriter, r *http.Request) {
-	userID, err := CheckIDCookie(w, r)
-	if err != nil { http.Error(w, err.Error(), http.StatusBadRequest); return }
-	client, err := database.GetClient(userID)
+	userID, ok := r.Context().Value(ContextKey("user-id")).(int64)
+	if !ok { panic(fmt.Errorf("unable to parse 'user-id' from handlenav()")) }
+	user, err := database.GetUser(userID)
 	if err != nil { http.Error(w, err.Error(), http.StatusBadRequest); return }
 	nav := template.Must(template.New("nav").Funcs(templateutil.NavFuncMap()).ParseFiles(templateutil.ParseFiles["nav"]...))
-	nav.Execute(w, client)
+	nav.Execute(w, user)
 }
