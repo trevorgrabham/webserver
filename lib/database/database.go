@@ -238,7 +238,7 @@ func UpdateUser(details *profile.UserDetails) error {
 	if err != nil { return fmt.Errorf("UpdateUser(%v): %v", details, err) }
 	if details.Email != "" {
 		row := DB.QueryRow(`SELECT 1 FROM user WHERE email = ?`, details.Email)
-		if err := row.Scan(); err == sql.ErrNoRows { return &profile.ErrEmailAlreadyExists{Message: fmt.Sprintf("Email %s is already registered", details.Email) }}
+		if err := row.Scan(); err != sql.ErrNoRows { return &profile.ErrEmailAlreadyExists{Message: fmt.Sprintf("Email %s is already registered", details.Email) }}
 
 		_, err = DB.Exec(`UPDATE user SET email = ? WHERE id = ?`, details.Email, details.ID)
 	}

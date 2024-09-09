@@ -1,25 +1,23 @@
 {{define "edit-pic"}}
-	<input
-		id="profile-pic-input"
-		name="pic"
-		type="file"
-		accept="image/jpeg, image/jpg, image/png"
-	/>
-	<div 
-		id="profile-edit-pic-button"
-		class="profile-edit-button"
-		hx-encoding="multipart/form-data"
-		hx-post="/profile/savePic"
-		hx-target="#profile-pic-container"
-		hx-include="#profile-pic-input"
-	>
-		Save
-	</div>
-	<div id="profile-pic-error-container">
-		{{range .Errors}}
-			<div class="profile-error">
-				{{.}}
-			</div>
-		{{end}}
-	</div>
+<input
+  id="profile-pic-input"
+  name="pic"
+  type="file"
+  accept="image/jpeg, image/jpg, image/png"
+/>
+<button
+  id="profile-edit-pic-button"
+  class="profile-edit-button"
+  hx-encoding="multipart/form-data"
+  hx-post="/profile/savePic"
+  hx-target="#profile-pic-container"
+  hx-include="#profile-pic-input"
+>
+  Save
+</button>
+<div id="profile-pic-error-container">
+  {{range .Errors}}
+  <div class="profile-error">{{.}}</div>
+  {{end}}
+</div>
 {{end}}

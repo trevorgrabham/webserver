@@ -71,3 +71,5 @@
 - [ ] Set up the link account form, and make sure that when users to try change their email address, that it doesn't already exist in the database. We will need to be able to send back error messages in this case, and we can prompt the user to link it to their account
 
 - [ ] Update the database so that user.email is a unique field
+
+- [ ] Add a 'last_seen' field in the users DB table, to track when the last time the user visited was, and if it is longer than 400 days ago, we can assume that the cookie has expired, and if they don't have an email associated with the user, we can delete the entry since once the cookie is lost, there is no way to retrieve the data ever again

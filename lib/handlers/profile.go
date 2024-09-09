@@ -53,8 +53,8 @@ func HandleSavePic(w http.ResponseWriter, r *http.Request) {
 	saveData := html.ProfileFieldData{ Value: user.ID, Errors: errors }
 
 	if errors == nil {
-		savePic := template.Must(template.New("save-pic").Funcs(html.ProfileFuncMap).ParseFiles(html.IncludeFiles["save-pic"]...))
-		if err = savePic.Execute(w, saveData); err != nil { panic(err) }
+		showPic := template.Must(template.New("show-pic").Funcs(html.ProfileFuncMap).ParseFiles(html.IncludeFiles["show-pic"]...))
+		if err = showPic.Execute(w, saveData); err != nil { panic(err) }
 		return
 	}
 	editPic := template.Must(template.New("edit-pic").Funcs(html.ProfileFuncMap).ParseFiles(html.IncludeFiles["edit-pic"]...))
@@ -103,8 +103,8 @@ func HandleSaveName(w http.ResponseWriter, r *http.Request) {
 
 		saveData.Value = name
 
-		saveName := template.Must(template.New("save-name").Funcs(html.ProfileFuncMap).ParseFiles(html.IncludeFiles["save-name"]...))
-		if err := saveName.Execute(w, saveData); err != nil { panic(err) }
+		showName := template.Must(template.New("show-name").Funcs(html.ProfileFuncMap).ParseFiles(html.IncludeFiles["show-name"]...))
+		if err := showName.Execute(w, saveData); err != nil { panic(err) }
 		return
 	}
 	editName := template.Must(template.New("edit-name").Funcs(html.ProfileFuncMap).ParseFiles(html.IncludeFiles["edit-name"]...))
@@ -152,9 +152,9 @@ func HandleSaveEmail(w http.ResponseWriter, r *http.Request) {
 	saveData := html.ProfileFieldData{ Value: user.Email, Errors: errors }
 
 	if errors == nil {
-		saveEmail := template.Must(template.New("save-email").Funcs(html.ProfileFuncMap).ParseFiles(html.IncludeFiles["save-email"]...))
+		showEmail := template.Must(template.New("show-email").Funcs(html.ProfileFuncMap).ParseFiles(html.IncludeFiles["show-email"]...))
 
-		if err := saveEmail.Execute(w, saveData); err != nil { panic(err) }
+		if err := showEmail.Execute(w, saveData); err != nil { panic(err) }
 		return
 	}
 	editEmail := template.Must(template.New("edit-email").Funcs(html.ProfileFuncMap).ParseFiles(html.IncludeFiles["edit-email"]...))
