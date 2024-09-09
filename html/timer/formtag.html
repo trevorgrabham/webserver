@@ -1,0 +1,17 @@
+{{define "form-tag"}}
+<input type="text"
+	id="tag-input" 
+	class="timer-form-input"
+	name="temporary-tag" 
+	placeholder="tags" 
+	maxlength="255"
+	hx-swap-oob="true"
+/>
+
+<div class="tag-container">
+	<div class="tag-wrapper">
+		<input type="text" class="tag-display" name="tag" value="{{.TagValue}}" readonly style="width: {{.TagWidth}}ch"/>
+		{{template "remove-svg" .SVG}}
+	</div>
+</div>
+{{end}}

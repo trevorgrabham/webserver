@@ -1,0 +1,17 @@
+{{define "timer"}}
+<p
+  id="timer-display"
+  _="on startTimer call startTimer() then 
+      repeat until event stopTimer
+        call updateTimer()
+        wait 1s
+      end"
+>
+  00:00
+</p>
+<div id="timer-buttons-container">
+  {{template "start-button" .StartButton}} 
+  {{template "pause-button" .PauseButton}} 
+  {{template "stop-button" .StopButton}}
+</div>
+{{end}}

@@ -1,0 +1,9 @@
+{{define "tags-container"}}
+<section id="tag-summary-section" class="section-container">
+  <div id="tag-summary-container">
+    <div id="tag-summary-data-container">{{template "tags" .}}</div>
+    {{if gt (len .) 9}} {{template "more-tags-button" (getMax .)}} {{else}}
+    {{template "disabled-more-tags-button"}} {{end}}
+  </div>
+</section>
+{{end}}

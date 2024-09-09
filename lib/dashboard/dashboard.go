@@ -1,7 +1,7 @@
 package dashboard
 
 import (
-	"html/template"
+	"fmt"
 
 	"github.com/trevorgrabham/webserver/webserver/lib/tag"
 )
@@ -20,5 +20,12 @@ type CardMetaData struct {
 	tag.Tags
 	TotalMins int64
 	Day       string
-	SwapOOB 	template.HTMLAttr
+	SwapOOB 	bool
+}
+
+func FormatTotalMin(t int64) string {
+	if t > 60 {
+		return fmt.Sprintf("%dh%dm", t/60, t%60)
+	}
+	return fmt.Sprintf("%dm", t%60)
 }

@@ -1,0 +1,11 @@
+{{define "nav"}}
+  <ul id="main-nav-list">
+    <li 
+      class="main-nav-list-item"
+      hx-get="/profile"
+      hx-target="body"
+    >
+      <img src="/imgs/{{getPic .}}" />
+    </li>
+  </ul>
+{{end}}

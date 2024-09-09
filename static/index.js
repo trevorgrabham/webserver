@@ -4,6 +4,28 @@ let elapsedHours = 0;
 let elapsedMinutes = 0;
 let elapsedSeconds = 0;
 let startDate = "";
+let debounceTimeoutHandle
+
+// To stop too many events from triggering
+function debounce(func, args, delay) {
+  clearTimeout(debounceTimeoutHandle)
+  debounceTimeoutHandle = setTimeout(() => func(args), delay)
+}
+
+// For filtering based off of textContent
+function filter(list, value) {
+  // TODO: Fill this out so that we can do auto-complete search results on the client-side
+}
+
+// For tabbing through a list of elements
+function focusNext(list, queryString, currentIndex) {
+  // Make sure that we are returning the new focused-child-index
+}
+
+// For tabbing through a list of elements
+function focusPrev(list, queryString, currentIndex) {
+  // Make sure that we are returning the new focused-child-index
+}
 
 // Resize hook
 window.addEventListener("resize", () => {
@@ -51,9 +73,7 @@ document.addEventListener("htmx:after-settle", function (event) {
 
 // Works for starting and resuming
 function startTimer() {
-  if (timer === null) {
-    timer = document.getElementById("timer-display");
-  }
+  timer = document.getElementById("timer-display");
   startTime =
     Date.now() -
     elapsedSeconds * 1000 -
@@ -89,10 +109,7 @@ function formatTimeString(time) {
 }
 
 function updateTimer() {
-  if (timer === null) {
-    timer = document.getElementById("timer-display");
-  }
-  timer.innerHTML = formatTime();
+  timer.innerText = formatTime();
   resizeFont(timer);
 }
 

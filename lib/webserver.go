@@ -8,20 +8,18 @@ import (
 )
 
 func StartServer() {
+	// Static 
+	http.Handle("/static/", http.StripPrefix("/static/", http.Handler(http.FileServer(http.Dir("./static")))))
 	// Nav 
 	http.Handle("/nav", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleNav)))
 	// Timer
-	http.Handle("/", handlers.SetCookieContext(http.Handler(http.FileServer(http.Dir("./static")))))
-	http.Handle("/defaultTimer", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleResetTimer)))
-	http.Handle("/startTimer", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleStartTimer)))
-	http.Handle("/pauseTimer", handlers.SetCookieContext(http.HandlerFunc(handlers.HandlePauseTimer)))
-	http.Handle("/resumeTimer", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleResumeTimer)))
+	http.Handle("/", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleIndex)))
+	http.Handle("/timer", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleResetTimer)))
 	http.Handle("/stopTimer", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleStopTimer)))
-	http.Handle("/activitySuggestions", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleActivitySuggestions)))
-	http.Handle("/tagSuggestions", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleTagSuggestions)))
+	// Timer Form
 	http.Handle("/addTag", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleAddTag)))
 	http.Handle("/removeTag", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleRemove)))
-	http.Handle("/resetTimer", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleResetTimer)))
+	http.Handle("/cancelTimer", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleResetTimer)))
 	http.Handle("/submitActivity", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleActivitySubmit)))
 	// Dashboard
 	http.Handle("/dashboard", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleDashboard)))

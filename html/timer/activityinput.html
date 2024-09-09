@@ -1,0 +1,30 @@
+{{define "activity-input"}}
+	<div id="activity-input-wrapper">
+		<input 
+      type="text" 
+			id="activity-input"
+			class="timer-form-input"
+			name="activity" 
+			placeholder="What were you doing?" 
+			required
+			minlength="2"
+			maxlength="255"
+      data-child-focused-index="-1"
+      _="on keyup[key is not 'Tab' and key is not 'Shift' and key is not 'Escape'] call debounce(filter, my value, 250)
+        on keyup[key is 'Escape'] set my value to '' then call debounce(filter, my value, 250) 
+        on keydown[key is 'Tab'] call event.preventDefault() 
+          if event.shiftKey 
+            call focusPrev(my children, 'div[tabindex=`0`]')
+          else
+            call focusNext(my children, 'div[tabindex=`0`]')
+          end"
+		  />
+		<div id="activity-suggestions">
+      {{template "auto-complete" .}}
+    </div>
+	</div>
+	
+	<div id="tags-wrapper">
+		<div id="tags-container"></div>
+	</div>
+{{end}}

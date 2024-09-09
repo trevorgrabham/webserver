@@ -69,3 +69,5 @@
 - [ ] Set up the browser history when moving to the profile page, or the stats page
 
 - [ ] Set up the link account form, and make sure that when users to try change their email address, that it doesn't already exist in the database. We will need to be able to send back error messages in this case, and we can prompt the user to link it to their account
+
+- [ ] Update the database so that user.email is a unique field

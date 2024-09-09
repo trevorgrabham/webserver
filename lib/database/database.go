@@ -11,7 +11,6 @@ import (
 	"github.com/trevorgrabham/webserver/webserver/lib/chart"
 	"github.com/trevorgrabham/webserver/webserver/lib/dashboard"
 	"github.com/trevorgrabham/webserver/webserver/lib/profile"
-	"github.com/trevorgrabham/webserver/webserver/lib/tag"
 	tagpkg "github.com/trevorgrabham/webserver/webserver/lib/tag"
 )
 
@@ -147,7 +146,7 @@ func GetCardData(userID int64, maxItems int64) (cards []dashboard.CardMetaData, 
 		if err != nil { return nil, fmt.Errorf("GetCardData(%d): %v", maxItems, err) }
 
 		var totalMins int64 
-		tags := make(tag.Tags, 0)
+		tags := make(tagpkg.Tags, 0)
 		for _, a := range dayActivities {
 			totalMins += a.Duration
 			// loop through so that we can de-duplicate any tags that are spread out over differing activities on the same day
@@ -163,35 +162,31 @@ func GetCardData(userID int64, maxItems int64) (cards []dashboard.CardMetaData, 
 	return
 }
 
-func GetTagData(userID int64, offset int64) (tags tag.TagSummaryData, err error) {
+func GetTagData(userID int64, offset int64) (tags tagpkg.Tags, err error) {
 	rows, err := DB.Query("SELECT tag, SUM(1) AS 'count' FROM activity_tag WHERE activity_id IN (SELECT id from timer_data WHERE user_id = ?) GROUP BY tag ORDER BY count DESC, tag LIMIT 10 OFFSET ?", userID, offset)
-	if err != nil { return tag.TagSummaryData{}, fmt.Errorf("GetTagData(%v, %v): %v", userID, offset, err) }
+	if err != nil { return nil, fmt.Errorf("GetTagData(%v, %v): %v", userID, offset, err) }
 	defer rows.Close()
 
 	var (
 		tag string 
 		count int64
-		totalNumTags int64
 		maxCount int64
 	)
 	for rows.Next() {
 		err := rows.Scan(&tag, &count)
-		if err != nil { return tagpkg.TagSummaryData{}, fmt.Errorf("GetTagData(%d, %d): %v", userID, offset, err) }
+		if err != nil { return nil, fmt.Errorf("GetTagData(%d, %d): %v", userID, offset, err) }
 
-		tags.Tags = append(tags.Tags, tagpkg.TagMetaData{ID: -1, Tag: tag, Count: count})
-		totalNumTags += count
+		tags = append(tags, tagpkg.TagMetaData{ID: -1, Tag: tag, Count: count})
 		if count > maxCount {
 			maxCount = count
 		}
 	}
-	if rows.Err() != nil { return tagpkg.TagSummaryData{}, fmt.Errorf("GetTagData(%d, %d): %v", userID, offset, rows.Err()) }
+	if rows.Err() != nil { return nil, fmt.Errorf("GetTagData(%d, %d): %v", userID, offset, rows.Err()) }
 	
-	for i := range tags.Tags {
-		tags.Tags[i].MaxCount = maxCount
+	for i := range tags {
+		tags[i].MaxCount = maxCount
 	}
 
-	tags.TotalCount = totalNumTags
-	tags.MaxCount = maxCount
 	return
 }
 
@@ -242,6 +237,9 @@ func UpdateUser(details *profile.UserDetails) error {
 	}
 	if err != nil { return fmt.Errorf("UpdateUser(%v): %v", details, err) }
 	if details.Email != "" {
+		row := DB.QueryRow(`SELECT 1 FROM user WHERE email = ?`, details.Email)
+		if err := row.Scan(); err == sql.ErrNoRows { return &profile.ErrEmailAlreadyExists{Message: fmt.Sprintf("Email %s is already registered", details.Email) }}
+
 		_, err = DB.Exec(`UPDATE user SET email = ? WHERE id = ?`, details.Email, details.ID)
 	}
 	if err != nil { return fmt.Errorf("UpdateUser(%v): %v", details, err) }

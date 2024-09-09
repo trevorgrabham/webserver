@@ -1,0 +1,12 @@
+{{define "more-tags-button"}}
+	<button 
+		id="load-tag-summary-button"
+		_="on click increment my @data-offset by 10"
+		hx-get="/tagSummary"
+		hx-target="#tag-summary-data-container"
+		hx-swap="beforeend"
+		hx-vals='js:{offset: event.target.getAttribute("data-offset"), max: event.target.getAttribute("data-max-count")}'
+		data-offset="11"
+		data-max-count="{{.}}"
+	>Load More<button>
+{{end}}

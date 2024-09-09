@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/trevorgrabham/webserver/webserver/html"
 	"github.com/trevorgrabham/webserver/webserver/lib/database"
-	"github.com/trevorgrabham/webserver/webserver/lib/templateutil"
 )
 
 func HandleTagSummary(w http.ResponseWriter, r *http.Request) {
@@ -17,16 +17,16 @@ func HandleTagSummary(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(ContextKey("user-id")).(int64)
 	if !ok { panic(fmt.Errorf("unable to parse 'user-id' from handletagsummary()")) }
 
-	res, ok := r.Form["offset"]
+	offsetString := r.Form.Get("offset")
 	var offset int64
-	if ok {
+	if offsetString != "" {
 		var err error
-		offset, err = strconv.ParseInt(res[0], 0, 64)
+		offset, err = strconv.ParseInt(offsetString, 0, 64)
 		if err != nil { panic(fmt.Errorf("HandleTagSummary(): %v", err)) }
 	}
-	if offset == 1 {
-		offset = 0
-	}
+	// if offset == 1 {
+	// 	offset = 0
+	// }
 
 	tags, err := database.GetTagData(userID, offset) 
 	if err != nil { panic(err) }
@@ -34,21 +34,20 @@ func HandleTagSummary(w http.ResponseWriter, r *http.Request) {
 	switch r.Header.Get("Hx-Trigger") {
 	// Coming from '/'
 	case "tag-summary-section":
-		tagsContainer := template.Must(template.New("tagscontainer").Funcs(templateutil.TagFuncMap()).ParseFiles(templateutil.ParseFiles["tagscontainer"]...))
-		err = tagsContainer.Execute(w, tags)
-		if err != nil { panic(fmt.Errorf("executing TagSummaryTemplate: %v", err)) }
+		tagsContainer := template.Must(template.New("tags-container").Funcs(html.TagFuncMap).ParseFiles(html.IncludeFiles["tags-container"]...))
+		if err = tagsContainer.Execute(w, tags); err != nil { panic(fmt.Errorf("executing TagSummaryTemplate: %v", err)) }
 	// Coming from the 'load more' button
 	case "load-tag-summary-button":
-		var max int64
-		res, ok = r.Form["max"]
-		if !ok { panic(fmt.Errorf("HandleTagSummary(): no 'max' attribute provided")) }
+		maxString := r.Form.Get("max")
+		if maxString == "" { panic(fmt.Errorf("HandleTagSummary(): no 'max' attribute provided")) }
 
-		max, err = strconv.ParseInt(res[0], 0, 64)
+		max, err := strconv.ParseInt(maxString, 0, 64)
 		if err != nil { panic(fmt.Errorf("HandleTagSummary(): %v", err)) }
+		for i := range tags {
+			tags[i].MaxCount = max
+		}
 
-		tags.MaxCount = max
-		tagsTemplate := template.Must(template.New("tags").Funcs(templateutil.TagFuncMap()).ParseFiles(templateutil.ParseFiles["tags"]...))
-		err = tagsTemplate.Execute(w, tags)
-		if err != nil { panic(fmt.Errorf("executing TagSummaryTemplate: %v", err)) }
+		tagsTemplate := template.Must(template.New("tags").Funcs(html.TagFuncMap).ParseFiles(html.IncludeFiles["tags"]...))
+		if err = tagsTemplate.Execute(w, tags); err != nil { panic(fmt.Errorf("executing TagSummaryTemplate: %v", err)) }
 	}
 }

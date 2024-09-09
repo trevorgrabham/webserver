@@ -1,0 +1,7 @@
+{{define "chart"}}
+<div id="chart-container">
+  {{range .}} 
+    {{template "chart-bar" .}} 
+  {{end}}
+</div>
+{{end}}

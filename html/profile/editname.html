@@ -1,0 +1,26 @@
+{{define "edit-name"}}
+	<div id="profile-name-row" class="profile-input-row">
+		<input 
+			id="profile-name-input"
+			name="name"
+			type="text"
+			placeholder="{{.Value}}"
+		/>
+		<div 
+			id="profile-edit-name-button"
+			class="profile-edit-button"
+			hx-post="/profile/saveName"
+			hx-target="#profile-name-row"
+			hx-include="#profile-name-input"
+		>
+			Save
+		</div>
+		<div id="profile-name-error-container">
+			<div class="profile-error">
+				{{range .Errors}}
+					{{.}}
+				{{end}}
+			</div>
+		</div>
+	</div>
+{{end}}

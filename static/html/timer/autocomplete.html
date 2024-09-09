@@ -1,9 +1,0 @@
-{{define "autocomplete"}}
-<div id="{{.ID}}" data-len="{{.Length}}" data-curr="0">
-	{{range .Suggestions}}
-		<div class="autocomplete-option-container">
-			<div class="autocomplete-option">{{optionStart .Option .MatchStart}}<span class="matched-part">{{optionMatch .Option .MatchStart .MatchEnd}}</span>{{optionEnd .Option .MatchEnd}}</div>
-		</div>
-	{{end}}
-</div>
-{{end}}
