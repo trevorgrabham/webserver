@@ -55,7 +55,7 @@ func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
 	if !ok { panic(fmt.Errorf("unable to parse 'user-id' from handleactivitysuggestions()")) }
 
 	// check that all required fields are present
-	if !r.Form.Has("activity") || !r.Form.Has("timer") || !r.Form.Has("tag") { panic(fmt.Errorf("missing field from %v", r.Form))}
+	if !r.Form.Has("activity") || !r.Form.Has("timer") { panic(fmt.Errorf("missing field from %v", r.Form))}
 	activity := strings.TrimSpace(r.Form.Get("activity"))
 	timerString := strings.TrimSpace(r.Form.Get("timer"))
 	tagStrings := r.Form["tag"]
@@ -127,5 +127,5 @@ func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
 	err = cardTemplate.Execute(w, card)
 	if err != nil { panic(fmt.Errorf("executing template: %v", err)) }
 
-	HandleIndex(w, r)
+	HandleResetTimers(w, r)
 }

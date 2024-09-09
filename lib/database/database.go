@@ -277,20 +277,21 @@ func GetStartEndData(userID int64) (start, end *time.Time, err error) {
 		row, err := DB.Query(`SELECT MIN(day) AS start, MAX(day) AS end FROM timer_data WHERE user_id = ?`, userID)
 		if err != nil { return nil, nil, fmt.Errorf("GetStartEndData(%d): %v", userID, err) }
 
-		var s, e string
+		var s, e sql.Null[string]
 		for row.Next() {
 			err := row.Scan(&s, &e)
 			if err != nil { return nil, nil, fmt.Errorf("GetStartEndData(%d): %v", userID, err) }
+			if !s.Valid || !e.Valid { return nil, nil, nil}
 		}
 		if row.Err() != nil { return nil, nil, fmt.Errorf("GetStartEndData(%d): %v", userID, err) }
 
 		{
-			t, err := time.Parse(chart.DateMask, s)
+			t, err := time.Parse(chart.DateMask, s.V)
 			if err != nil { return nil, nil, fmt.Errorf("GetStartEndData(%d): %v", userID, err) }
 			start = &t
 		}
 		{
-			t, err := time.Parse(chart.DateMask, e)
+			t, err := time.Parse(chart.DateMask, e.V)
 			if err != nil { return nil, nil, fmt.Errorf("GetStartEndData(%d): %v", userID, err) }
 			end = &t
 		}

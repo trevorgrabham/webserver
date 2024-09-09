@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/trevorgrabham/webserver/webserver/html"
+	"github.com/trevorgrabham/webserver/webserver/lib/database"
 )
 
 func HandleNav(w http.ResponseWriter, r *http.Request) {
@@ -30,9 +31,16 @@ func HandleNav(w http.ResponseWriter, r *http.Request) {
 		TimerData: html.TimerData{
 			StartButton: html.NewElementAttributes(append([]string{`id="nav-start-button"`, `class="svg-button start-timer-button"`}, startHyperscript)),
 			PauseButton: html.NewElementAttributes(append([]string{`id="nav-pause-button"`, `class="svg-button hidden pause-timer-button"`}, pauseHyperscript)),
-			StopButton: html.NewElementAttributes(append([]string{`id="nav-stop-button"`, `class="svg-button hidden stop-timer-button"`, `hx-get="/stopTimer"`, `hx-vals="js:{timer: document.querySelector('.timer-display').innerText}"`, `hx-target="#timer-container"`}, stopHyperscript)),
-		},
+			StopButton: html.NewElementAttributes(append([]string{`id="nav-stop-button"`, `class="svg-button hidden stop-timer-button"`, `hx-get="/stopTimer"`, `hx-vals="js:{timer: document.querySelector('.timer-display').innerText}"`, `hx-target="#timer-container"`}, stopHyperscript))},
 		ID: userID}
+	
+	start, end, err := database.GetStartEndData(userID)
+	if err != nil { panic(err) }
+	if start == nil || end == nil {
+		navData.Chart = html.NewElementAttributes([]string{`id="nav-chart-link"`, `class="nav-list-item hidden"`})
+	} else {
+		navData.Chart = html.NewElementAttributes([]string{`id="nav-chart-link"`, `class="nav-list-item"`})
+	}
 
 	nav := template.Must(template.New("nav").Funcs(html.NavFuncMap).ParseFiles(html.IncludeFiles["nav"]...))
 	if err := nav.Execute(w, navData); err != nil { panic(err) }

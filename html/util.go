@@ -55,6 +55,7 @@ type ProfileData struct {
 type NavData struct {
 	TimerData
 	ID int64
+	Chart ElementAttributesData
 }
 
 // 																									|| End types || 

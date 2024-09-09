@@ -32,7 +32,7 @@ func HandleChart(w http.ResponseWriter, r *http.Request) {
 
 	if start == nil || end == nil {
 		s, e, err := database.GetStartEndData(userID)
-		if err != nil { panic(fmt.Errorf("getting start and end values: %v")) }
+		if err != nil || s == nil || e == nil { panic(fmt.Errorf("getting start and end values: %v", err)) }
 		if start == nil { start = s }
 		if end == nil { end = e }
 	}

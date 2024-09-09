@@ -193,7 +193,7 @@ func generateBarsByDay(data []Data, start *time.Time) (bars []ChartBar, err erro
 }
 
 func generateBarsByEntry(data []Data, _ *time.Time) (bars []ChartBar, err error) {
-	bars = make([]ChartBar, len(data))
+	bars = make([]ChartBar, 0, len(data))
 	for _, dataPoint := range data {
 		bars = append(bars, ChartBar{Count: dataPoint.Duration})
 	}
