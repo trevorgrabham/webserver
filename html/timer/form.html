@@ -4,37 +4,29 @@
   hx-post="/submitActivity"
   hx-target="#timer-container"
   action=""
-	autocomplete="off"
+  autocomplete="off"
 >
-  <input id="hidden-timer" name="timer" type="hidden" />
-	<div id="activity-input-container" class="timer-form-input-row">
-		{{template "activity-input" .ActivitySuggestions}}
-	</div>
+  <input id="hidden-timer" name="timer" type="hidden" value="{{.TimerValue}}" />
+  <div id="activity-input-container" class="timer-form-input-row">
+    {{template "activity-input" .ActivitySuggestions}}
+  </div>
 
+  <div id="tag-input-container" class="timer-form-input-row">
+    <input
+      type="text"
+      id="tag-input"
+      class="timer-form-input"
+      name="temporary-tag"
+      placeholder="tags"
+      maxlength="255"
+    />
 
-	<div 
-		id="tag-input-container" 
-		class="timer-form-input-row"
-	>
+    {{template "plus-button" .PlusButton}}
+  </div>
 
-		<input type="text"
-			id="tag-input" 
-			class="timer-form-input"
-			name="temporary-tag" 
-			placeholder="tags" 
-			maxlength="255"
-		/>
-			
-			{{template "plus-button" .PlusButton}}
-
-	</div>
-
-	<div id="timer-form-submit-container" class="timer-form-input-row">
-	
-			{{template "success-button" .SuccessButton}}
-		
-			{{template "cancel-button" .CancelButton}}
-
-	</div>
+  <div id="timer-form-submit-container" class="timer-form-input-row">
+    {{template "success-button" .SuccessButton}} {{template "cancel-button"
+    .CancelButton}}
+  </div>
 </form>
 {{end}}

@@ -1,15 +1,15 @@
-let timer = document.getElementById("timer-display");
+let timers;
 let startTime;
 let elapsedHours = 0;
 let elapsedMinutes = 0;
 let elapsedSeconds = 0;
 let startDate = "";
-let debounceTimeoutHandle
+let debounceTimeoutHandle;
 
 // To stop too many events from triggering
 function debounce(func, args, delay) {
-  clearTimeout(debounceTimeoutHandle)
-  debounceTimeoutHandle = setTimeout(() => func(args), delay)
+  clearTimeout(debounceTimeoutHandle);
+  debounceTimeoutHandle = setTimeout(() => func(args), delay);
 }
 
 // For filtering based off of textContent
@@ -61,10 +61,6 @@ document.addEventListener("htmx:after-settle", function (event) {
   if (event.detail.pathInfo.requestPath === "/addTag") {
     checkOverflowing(document.getElementById("tags-wrapper"));
   }
-  // Set the value on the hidden timer input if we just stopped the timer
-  if (event.detail.pathInfo.requestPath === "/stopTimer") {
-    updateTimerInput();
-  }
   // Reset the scroll position to the top (new card just added) if we just added new timer data
   if (event.detail.pathInfo.requestPath === "/submitActivity") {
     document.getElementById("dashboard-section").scrollTop = 0;
@@ -72,8 +68,8 @@ document.addEventListener("htmx:after-settle", function (event) {
 });
 
 // Works for starting and resuming
-function startTimer() {
-  timer = document.getElementById("timer-display");
+function startTimers() {
+  timers = document.querySelectorAll(".timer-display");
   startTime =
     Date.now() -
     elapsedSeconds * 1000 -
@@ -81,7 +77,7 @@ function startTimer() {
     elapsedHours * 1000 * 60 * 60;
 }
 
-function resetTimer() {
+function resetTimers() {
   elapsedSeconds = 0;
   elapsedMinutes = 0;
   elapsedHours = 0;
@@ -108,9 +104,12 @@ function formatTimeString(time) {
   return time.toString();
 }
 
-function updateTimer() {
-  timer.innerText = formatTime();
-  resizeFont(timer);
+function updateTimers() {
+  var time = formatTime();
+  timers.forEach((t) => {
+    t.innerText = time;
+    resizeFont(t);
+  });
 }
 
 // Starts at 5em font-size and reduces it by 10% until it no longer overflows
@@ -130,16 +129,6 @@ function checkOverflowing(element) {
   element.scrollHeight > element.clientHeight
     ? element.classList.add("overflowing")
     : element.classList.remove("overflowing");
-}
-
-// For after we stop the timer, to populate the hidden timer input
-function updateTimerInput() {
-  if (timer === null) {
-    timer = document.getElementById("timer-display");
-  }
-  document
-    .getElementById("hidden-timer")
-    .setAttribute("value", timer.innerHTML);
 }
 
 function checkDateExists() {

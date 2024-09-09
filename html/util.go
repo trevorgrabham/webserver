@@ -25,6 +25,7 @@ type FormTagData struct {
 
 // 
 type FormData struct {
+	TimerValue string 
 	ActivitySuggestions []string
 	// TODO 
 	// TagSuggestions []string
@@ -34,6 +35,7 @@ type FormData struct {
 }
 
 type TimerData struct {
+	ButtonContainer ElementAttributesData
 	StartButton ElementAttributesData
 	PauseButton ElementAttributesData
 	StopButton ElementAttributesData
@@ -50,7 +52,10 @@ type ProfileData struct {
 	Email ProfileFieldData
 }
 
-type NavData interface{}
+type NavData struct {
+	TimerData
+	ID int64
+}
 
 // 																									|| End types || 
 

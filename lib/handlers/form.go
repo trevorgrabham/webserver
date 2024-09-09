@@ -32,8 +32,20 @@ func HandleAddTag(w http.ResponseWriter, r *http.Request) {
 	if err := formTag.Execute(w, formTagData); err != nil { panic(err) }
 }
 
-func HandleResetTimer(w http.ResponseWriter, _ *http.Request) {
-	resetTimer(w)
+func HandleResetTimers(w http.ResponseWriter, _ *http.Request) {
+	startHyperscript := `_="on click trigger click on #nav-start-button"`
+	pauseHyperscript := `_="on click trigger click on #nav-pause-button"`
+	stopHyperscript := `_="on click trigger click on #nav-stop-button"`
+	timerData := html.TimerData{
+		StartButton: html.NewElementAttributes(append([]string{`id="main-start-button"`, `class="svg-button start-timer-button"`}, startHyperscript)),
+		PauseButton: html.NewElementAttributes(append([]string{`id="main-pause-button"`, `class="svg-button hidden pause-timer-button"`}, pauseHyperscript)),
+		StopButton: html.NewElementAttributes(append([]string{`id="main-stop-button"`, `class="svg-button hidden stop-timer-button"`}, stopHyperscript)),
+	}
+
+	HandleNavTimer(w, nil)
+	
+	timer := template.Must(template.New("timer").ParseFiles(html.IncludeFiles["timer"]...))
+	if err := timer.Execute(w, timerData); err != nil { panic(err) }
 }
 
 func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
@@ -115,26 +127,5 @@ func HandleActivitySubmit(w http.ResponseWriter, r *http.Request) {
 	err = cardTemplate.Execute(w, card)
 	if err != nil { panic(fmt.Errorf("executing template: %v", err)) }
 
-	resetTimer(w)
-}
-
-func resetTimer(w http.ResponseWriter) {
-	startHyperscript := `_="on click
-												send startTimer to #timer-display
-												add .hidden to me
-												remove .hidden from #pause-timer-button
-												remove .hidden from #stop-timer-button"`
-	pauseHyperscript := `_="on click
-												send stopTimer to #timer-display 
-												add .hidden to me
-												remove .hidden from #start-timer-button"`
-	stopHyperscript := `_="on click send stopTimer to #timer-display"`
-	timerData := html.TimerData{
-		StartButton: html.NewElementAttributes(append([]string{`id="start-timer-button"`, `class="svg-button"`}, startHyperscript)),
-		PauseButton: html.NewElementAttributes(append([]string{`id="pause-timer-button"`, `class="svg-button hidden"`}, pauseHyperscript)),
-		StopButton: html.NewElementAttributes(append([]string{`id="stop-timer-button"`, `class="svg-button hidden"`, `hx-get="/stopTimer"`, `hx-target="#timer-buttons-container"`, `hx-swap="outerHTML"`}, stopHyperscript)),
-	}
-
-	timer := template.Must(template.New("timer").ParseFiles(html.IncludeFiles["timer"]...))
-	if err := timer.Execute(w, timerData); err != nil { panic(err) }
+	HandleIndex(w, r)
 }

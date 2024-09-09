@@ -28,7 +28,19 @@ var IncludeFiles = map[string][]string{
 	"nav": {
 		"html/nav/nav.html",
 		// Timer
-		"html/timer/timer.html",
+		"html/nav/timer.html",
+		// Start button
+		"html/timer/startbutton.html",
+		"html/svg/startsvg.html",
+		// Pause button
+		"html/timer/pausebutton.html",
+		"html/svg/pausesvg.html",
+		// Stop button
+		"html/timer/stopbutton.html",
+		"html/svg/stopsvg.html",
+		"html/svg/chartsvg.html"},
+	"nav-timer": {
+		"html/nav/timer.html",
 		// Start button
 		"html/timer/startbutton.html",
 		"html/svg/startsvg.html",

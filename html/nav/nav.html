@@ -1,11 +1,17 @@
 {{define "nav"}}
-  <ul id="main-nav-list">
-    <li 
-      class="main-nav-list-item"
-      hx-get="/profile"
-      hx-target="body"
-    >
-      <img src="/imgs/{{getPic .}}" />
-    </li>
-  </ul>
+<ul id="main-nav-list">
+  <li class="main-nav-list-item" hx-get="/chart" hx-target="body">
+    {{template "chart-svg"}}
+  </li>
+  <li id="nav-timer-container">
+    <p id="nav-timer-display" class="timer-display">00:00</p>
+    <div id="nav-timer-buttons-container" class="timer-buttons-container">
+      {{template "start-button" .StartButton}} {{template "pause-button"
+      .PauseButton}} {{template "stop-button" .StopButton}}
+    </div>
+  </li>
+  <li class="main-nav-list-item" hx-get="/profile" hx-target="body">
+    <img src="/imgs/{{getPic .ID}}" />
+  </li>
+</ul>
 {{end}}

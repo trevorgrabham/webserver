@@ -7,21 +7,15 @@ import (
 	"github.com/trevorgrabham/webserver/webserver/html"
 )
 
-func HandleIndex(w http.ResponseWriter, r *http.Request) {
-	startHyperscript := `_="on click
-												send startTimer to #timer-display
-												add .hidden to me
-												remove .hidden from #pause-timer-button
-												remove .hidden from #stop-timer-button"`
-	pauseHyperscript := `_="on click
-												send stopTimer to #timer-display 
-												add .hidden to me
-												remove .hidden from #start-timer-button"`
-	stopHyperscript := `_="on click send stopTimer to #timer-display"`
+func HandleIndex(w http.ResponseWriter, _ *http.Request) {
+	startHyperscript := `_="on click trigger click on #nav-start-button"`
+	pauseHyperscript := `_="on click trigger click on #nav-pause-button"`
+	stopHyperscript := `_="on click trigger click on #nav-stop-button"`
 	indexData := html.TimerData{
-		StartButton: html.NewElementAttributes(append([]string{`id="start-timer-button"`, `class="svg-button"`}, startHyperscript)),
-		PauseButton: html.NewElementAttributes(append([]string{`id="pause-timer-button"`, `class="svg-button hidden"`}, pauseHyperscript)),
-		StopButton: html.NewElementAttributes(append([]string{`id="stop-timer-button"`, `class="svg-button hidden"`, `hx-get="/stopTimer"`, `hx-target="#timer-buttons-container"`, `hx-swap="outerHTML"`}, stopHyperscript)),
+		ButtonContainer: html.NewElementAttributes([]string{`id="main-timer-buttons-container"`, `class="timer-buttons-container"`}),
+		StartButton: html.NewElementAttributes(append([]string{`id="main-start-button"`, `class="svg-button start-timer-button"`}, startHyperscript)),
+		PauseButton: html.NewElementAttributes(append([]string{`id="main-pause-button"`, `class="svg-button hidden pause-timer-button"`}, pauseHyperscript)),
+		StopButton: html.NewElementAttributes(append([]string{`id="main-stop-button"`, `class="svg-button hidden stop-timer-button"`}, stopHyperscript)),
 	}
 	
 	index := template.Must(template.New("home").ParseFiles(html.IncludeFiles["home"]...))

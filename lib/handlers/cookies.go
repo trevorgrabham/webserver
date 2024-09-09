@@ -28,10 +28,10 @@ func init() {
 }
 
 func SetCookieContext(next http.Handler) http.Handler {
-	return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var userID int64
 		cookie, err := r.Cookie("user-id")
-		if err != nil {
+		if err == http.ErrNoCookie {
 			userID, err = database.AddUserID()
 			if err != nil { panic(err) }
 			encoded, err := sc.Encode("user-id", userID)
@@ -42,6 +42,7 @@ func SetCookieContext(next http.Handler) http.Handler {
 				Path: "/",
 				HttpOnly: true,
 				SameSite: http.SameSiteStrictMode,
+				Secure: false,
 				Expires: time.Now().AddDate(2, 0, 0)}
 			http.SetCookie(w, cookie)
 		} else if err = sc.Decode("user-id", cookie.Value, &userID); err != nil { panic(err) }

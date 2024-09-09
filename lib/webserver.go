@@ -14,12 +14,11 @@ func StartServer() {
 	http.Handle("/nav", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleNav)))
 	// Timer
 	http.Handle("/", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleIndex)))
-	http.Handle("/timer", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleResetTimer)))
 	http.Handle("/stopTimer", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleStopTimer)))
 	// Timer Form
 	http.Handle("/addTag", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleAddTag)))
 	http.Handle("/removeTag", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleRemove)))
-	http.Handle("/cancelTimer", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleResetTimer)))
+	http.Handle("/cancelTimer", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleResetTimers)))
 	http.Handle("/submitActivity", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleActivitySubmit)))
 	// Dashboard
 	http.Handle("/dashboard", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleDashboard)))
@@ -36,5 +35,5 @@ func StartServer() {
 	// Chart
 	http.Handle("/chart", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleChart)))
 
-	log.Fatal(http.ListenAndServe("localhost:8000", nil))
+	log.Fatal(http.ListenAndServe("127.0.0.1:8000", nil))
 }
