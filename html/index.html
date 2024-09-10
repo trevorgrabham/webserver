@@ -15,23 +15,25 @@
   </head>
   <body>
     <nav id="main-nav" class="nav-bar" hx-get="/nav" hx-trigger="load"></nav>
-    <section id="timer-container" class="section-container">
-      {{template "timer" .}}
-    </section>
-    <section
-      id="dashboard-section"
-      class="section-container"
-      hx-get="/dashboard?maxItems=50"
-      hx-swap="outerHTML"
-      hx-trigger="load"
-    ></section>
-    <section
-      id="tag-summary-section"
-      class="section-container"
-      hx-get="/tagSummary"
-      hx-swap="outerHTML"
-      hx-trigger="load"
-    ></section>
+    <div id="content">
+      <section id="timer-container" class="section-container">
+        {{template "timer" .}}
+      </section>
+      <section
+        id="dashboard-section"
+        class="section-container"
+        hx-get="/dashboard?maxItems=50"
+        hx-swap="outerHTML"
+        hx-trigger="load"
+      ></section>
+      <section
+        id="tag-summary-section"
+        class="section-container"
+        hx-get="/tagSummary"
+        hx-swap="outerHTML"
+        hx-trigger="load"
+      ></section>
+    </div>
   </body>
 </html>
 {{end}}
