@@ -32,6 +32,7 @@ func StartServer() {
 	http.Handle("/profile/saveName", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleSaveName)))
 	http.Handle("/profile/editEmail", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleEditEmail)))
 	http.Handle("/profile/saveEmail", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleSaveEmail)))
+	http.Handle("/profile/linkAccount", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleLinkAccount)))
 	// Chart
 	http.Handle("/chart", handlers.SetCookieContext(http.HandlerFunc(handlers.HandleChart)))
 

@@ -17,6 +17,9 @@ type UserDetails struct {
 	Email string
 }
 
+type ErrNoEmailExists struct { Message string }
+func (e *ErrNoEmailExists) Error() string { return e.Message }
+
 type ErrEmailAlreadyExists struct { Message string }
 func (e *ErrEmailAlreadyExists) Error() string { return e.Message }
 

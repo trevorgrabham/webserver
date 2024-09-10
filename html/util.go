@@ -23,7 +23,6 @@ type FormTagData struct {
 	TagWidth int
 }
 
-// 
 type FormData struct {
 	TimerValue string 
 	ActivitySuggestions []string
@@ -50,6 +49,7 @@ type ProfileData struct {
 	Pic ProfileFieldData
 	Name ProfileFieldData
 	Email ProfileFieldData
+	Link []string
 }
 
 type NavData struct {

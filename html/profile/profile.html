@@ -1,13 +1,29 @@
 {{define "profile"}}
-	<div id="profile-section">
-		<div id="profile-pic-container">
-      {{template "show-pic" .Pic}}
-	  </div>
-		<div id="profile-details-container">
-      {{template "show-name" .Name}}
-	  </div>
-		<div id="profile-details-container">
-      {{template "show-email" .Email}}
-	  </div>
-	</div>
+<div id="profile-section">
+  <div id="profile-pic-container">{{template "show-pic" .Pic}}</div>
+  <div id="profile-details-container">{{template "show-name" .Name}}</div>
+  <div id="profile-details-container">{{template "show-email" .Email}}</div>
+  <div id="link-account-section">
+    Already have an account?
+    <div id="link-account" _="on click remove .hidden from #link-account-popup">
+      Link it
+    </div>
+  </div>
+</div>
+<div id="link-account-popup" {{if lt (len .Link) 1}} class="hidden" {{end}}>
+  <div id="link-account-form">
+    <input type="email" name="link-to-account" id="link-account-input" />
+    {{range .Link}}
+    <div class="error link-account-error">{{.}}</div>
+    {{end}}
+    <button
+      hx-get="/profile/linkAccount"
+      hx-include="#link-account-input"
+      hx-params="link-to-account"
+      hx-target="body"
+    >
+      Link
+    </button>
+  </div>
+</div>
 {{end}}

@@ -41,7 +41,7 @@ func SetCookieContext(next http.Handler) http.Handler {
 				Value: encoded,
 				Path: "/",
 				HttpOnly: true,
-				SameSite: http.SameSiteStrictMode,
+				SameSite: http.SameSiteLaxMode,
 				Secure: false,
 				Expires: time.Now().AddDate(2, 0, 0)}
 			http.SetCookie(w, cookie)
@@ -52,11 +52,17 @@ func SetCookieContext(next http.Handler) http.Handler {
 	})
 }
 
-func LinkToAccount(accountUserID int64, w http.ResponseWriter, r *http.Request) error {
-	oldUserID, ok := r.Context().Value(ContextKey("user-id")).(int64)
-	if !ok { panic(fmt.Errorf("unable to parse 'user-id' cookie")) }
-	if accountUserID < 1 { return fmt.Errorf("LinkToAccount(%d): Bad value for 'accountUserID'", accountUserID) }
-	err := database.LinkUsers(accountUserID, oldUserID)
-	if err != nil { return fmt.Errorf("LinkToAccount(%d):%v", accountUserID, err) }
+func UpdateCookie(newAccountID int64, w http.ResponseWriter, r *http.Request) error {
+	encoded, err := sc.Encode("user-id", newAccountID)
+	if err != nil { return err }
+	cookie := &http.Cookie{
+		Name: "user-id",
+		Value: encoded,
+		Path: "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Secure: false,
+		Expires: time.Now().AddDate(2, 0, 0)}
+	http.SetCookie(w, cookie)
 	return nil
 }

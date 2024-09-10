@@ -162,6 +162,45 @@ func HandleSaveEmail(w http.ResponseWriter, r *http.Request) {
 	if err := editEmail.Execute(w, saveData); err != nil { panic(err) }
 }
 
+func HandleLinkAccount(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(ContextKey("user-id")).(int64) 
+	if !ok { panic(fmt.Errorf("handlelinkaccount(): unable to parse 'user-id'")) }
+	if err := r.ParseForm(); err != nil { panic(err) }
+
+	user, err := database.GetUser(userID)
+	if err != nil { panic(err.Error()) }
+
+	var errors []string
+	accountEmail := r.Form.Get("link-to-account")
+	if accountEmail == "" { errors = append(errors, "No account to link to provided") }
+
+	if errors == nil && template.HTMLEscapeString(accountEmail) != accountEmail {
+		errors = append(errors, "Not a valid email address. Special characters are not allowed")
+	}
+
+	otherID, err := database.GetUserIDFromEmail(accountEmail)
+	e, ok := err.(*profile.ErrNoEmailExists) 
+	if ok { errors = append(errors, e.Error())}
+	if err != nil && !ok { panic(err) }
+
+	if errors == nil {
+		if err = database.LinkUsers(otherID, userID); err != nil { panic(err) }
+		if err = UpdateCookie(otherID, w, r); err != nil { panic(err) }
+
+		// grab the new user data, and send them back to their new profile page
+		user, err = database.GetUser(otherID)
+		if err != nil { panic(err.Error()) }
+	}
+	userProfile := html.ProfileData{
+		Pic: html.ProfileFieldData{Value: user.ID },
+		Name: html.ProfileFieldData{Value: user.Name },
+		Email: html.ProfileFieldData{Value: user.Email },
+		Link: errors}
+
+	profileTemplate := template.Must(template.New("profile").Funcs(html.ProfileFuncMap).ParseFiles(html.IncludeFiles["profile"]...))
+	if err := profileTemplate.Execute(w, userProfile); err != nil { panic(err) }
+}
+
 func checkInputForHTML(userString string) (ok bool) {
 	return userString == template.HTMLEscapeString(userString)
 }

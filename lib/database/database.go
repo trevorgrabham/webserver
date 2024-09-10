@@ -316,3 +316,11 @@ func GetChartData(userID int64, start, end *time.Time) (res []chart.Data, err er
 	if rows.Err() != nil { return nil, fmt.Errorf("GetChartData(%d, %s, %s): %v", userID, start.Format(chart.DateMask), end.Format(chart.DateMask), rows.Err()) }
 	return
 }
+
+func GetUserIDFromEmail(email string) (userID int64, err error) {
+	if email == "" { return -1, fmt.Errorf("getuseridfromemail(): no 'email' provided") }
+	row := DB.QueryRow(`SELECT id FROM user WHERE email = ?`, email)
+	if err := row.Scan(&userID); err == sql.ErrNoRows { return -1, &profile.ErrNoEmailExists{Message: fmt.Sprintf("%s does not have an account registerd", email)} }
+	if userID < 1 { return -1, fmt.Errorf("read a bad value for 'id' with email %s", email) }
+	return userID, nil
+}
